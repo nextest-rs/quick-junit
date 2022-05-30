@@ -17,5 +17,5 @@ indexmap = "1.8.1"
 quick-xml = "0.22.0"
 
 [dev-dependencies]
-goldenfile = "1.1.0"
+goldenfile = "1.2.0"
 owo-colors = "3.4.0"
