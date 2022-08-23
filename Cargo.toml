@@ -20,4 +20,4 @@ uuid = "1.1.2"
 
 [dev-dependencies]
 goldenfile = "1.4.3"
-owo-colors = "3.4.0"
+owo-colors = "3.5.0"
