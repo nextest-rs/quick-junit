@@ -19,5 +19,5 @@ thiserror = "1.0.44"
 uuid = "1.4.1"
 
 [dev-dependencies]
-goldenfile = "1.5.1"
+goldenfile = "1.5.2"
 owo-colors = "3.5.0"
