@@ -1,7 +1,6 @@
 on:
   push:
     branches:
-      - master
       - main
 
 name: Docs
@@ -22,9 +21,12 @@ jobs:
           rm -rf target/gh-pages
           mkdir target/gh-pages
           mv target/doc target/gh-pages/rustdoc
-      - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@releases/v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          branch: gh-pages
-          folder: target/gh-pages
-          single-commit: true
+          path: target/gh-pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
