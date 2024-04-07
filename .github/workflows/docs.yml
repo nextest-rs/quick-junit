@@ -26,6 +26,11 @@ jobs:
           rm -rf target/gh-pages
           mkdir target/gh-pages
           mv target/doc target/gh-pages/rustdoc
+      - name: Fix permissions
+        run: |
+          chmod -c -R +rX "target/gh-pages/" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
