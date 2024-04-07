@@ -15,26 +15,12 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84 # v2
-      - name: Install static-sitemap-cli
-        run: npm install static-sitemap-cli
       - name: Build rustdoc
         run: cargo doc --all-features --workspace
-      - name: Install mdbook
-        uses: taiki-e/install-action@834a7b93e0c678fb40309ee0e36546336d5c6ea7 # v2
-        with:
-          tool: mdbook@0.4
-      - name: Run mdbook
-        run: |
-          cd site
-          mdbook build
-      - name: Generate sitemap
-        run: |
-          cd site/output
-          npx sscli --base https://nexte.st
       - name: Organize
         run: |
           rm -rf target/gh-pages
-          mv site/output target/gh-pages
+          mkdir target/gh-pages
           mv target/doc target/gh-pages/rustdoc
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@releases/v4
