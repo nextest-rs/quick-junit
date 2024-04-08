@@ -23,7 +23,7 @@ jobs:
       - uses: taiki-e/create-gh-release-action@8df4de6534ceacdaed10a08f73418ca751f31793 # v1
         with:
           prefix: quick-junit
-          changelog: quick-junit/CHANGELOG.md
+          changelog: CHANGELOG.md
           title: $prefix $version
           branch: main
         env:
