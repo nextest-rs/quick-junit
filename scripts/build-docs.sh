@@ -9,4 +9,4 @@ cargo tree --depth 1 -e normal --prefix none \
 
 # Also drop a _redirects file in the root of the docs directory -- this will be picked up by the
 # CI script.
-echo "/ /rustdoc/quick_junit/index.html 301" > target/doc/_redirects
+echo "/ /rustdoc/quick_junit/ 301" > target/doc/_redirects
