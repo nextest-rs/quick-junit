@@ -33,7 +33,7 @@ spirit of the PR. (Think of the changes that the maintainers would have done any
 
 To make this easier, please check the box that allows maintainers to edit your branch:
 
-![Screenshot_20240407_233207](https://github.com/nextest-rs/quick-junit/assets/180618/9f4074fa-4f52-4735-af19-144464f0fb8d)
+![Screenshot of GitHub new pull request page, showing "Allow edits and access to secrets by maintainers" checked](https://github.com/nextest-rs/quick-junit/assets/180618/9f4074fa-4f52-4735-af19-144464f0fb8d)
 
 If maintainers need to make changes and that box is checked, then your PR can be marked as "merged"
 in the web UI. Otherwise, it will be marked as "closed".
