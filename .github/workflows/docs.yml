@@ -3,11 +3,6 @@ on:
     branches:
       - main
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 name: Docs
 
 jobs:
@@ -26,17 +21,11 @@ jobs:
           rm -rf target/gh-pages
           mkdir target/gh-pages
           mv target/doc target/gh-pages/rustdoc
-      - name: Fix permissions
-        run: |
-          chmod -c -R +rX "target/gh-pages/" | while read line; do
-            echo "::warning title=Invalid file permissions automatically fixed::$line"
-          done
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Publish
+        uses: cloudflare/pages-action@1
         with:
-          path: target/gh-pages
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: quick-junit
+          directory: target/gh-pages
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
