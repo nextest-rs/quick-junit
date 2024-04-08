@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-### Changed
+### [0.3.6-rc.1] - 2024-04-08
 
-- MSRV updated to Rust 1.73.
+- Updated repository to [https://github.com/nextest-rs/quick-junit](https://github.com/nextest-rs/quick-junit).
 
 ## [0.3.5] - 2023-10-27
 
@@ -97,6 +97,7 @@
 
 - Initial version.
 
+[0.3.6-rc.1]: https://github.com/nextest-rs/nextest/releases/tag/quick-junit-0.3.6-rc.1
 [0.3.5]: https://github.com/nextest-rs/nextest/releases/tag/quick-junit-0.3.5
 [0.3.4]: https://github.com/nextest-rs/nextest/releases/tag/quick-junit-0.3.4
 [0.3.3]: https://github.com/nextest-rs/nextest/releases/tag/quick-junit-0.3.3

@@ -17,7 +17,8 @@ to create a JUnit report as an XML file. JUnit XML files are widely supported by
 The root element of a JUnit report is a `Report`. A `Report` consists of one or more
 `TestSuite` instances. A `TestSuite` instance consists of one or more `TestCase`s.
 
-The status (success, failure, error, or skipped) of a `TestCase` is represented by `TestCaseStatus`.
+The status (success, failure, error, or skipped) of a `TestCase` is represented by
+`TestCaseStatus`.
 
 ## Features
 
@@ -65,15 +66,16 @@ For a more comprehensive example, including reruns and flaky tests, see
 
 ## Minimum supported Rust version (MSRV)
 
-The minimum supported Rust version is **Rust 1.70.**
+The minimum supported Rust version is **Rust 1.70.** At any time, Rust versions from at least
+the last 6 months will be supported.
 
-While this crate is a pre-release (0.x.x) it may have its MSRV bumped in a patch release.
-Once a crate has reached 1.x, any MSRV bump will be accompanied with a new minor version.
+While this crate is a pre-release (0.x.x) it may have its MSRV bumped in a patch release. Once a
+crate has reached 1.x, any MSRV bump will be accompanied with a new minor version.
 
 ## Alternatives
 
-* [**junit-report**](https://crates.io/crates/junit-report): Older, more mature project. Doesn't
-  appear to support flaky tests or arbitrary properties as of version 0.7.0.
+- [**junit-report**](https://crates.io/crates/junit-report): Older, more mature project. Doesn't
+  appear to support flaky tests or arbitrary properties as of version 0.8.3.
 
 ## Contributing
 
