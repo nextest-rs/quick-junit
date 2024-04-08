@@ -14,12 +14,13 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84 # v2
-      - name: Build rustdoc
-        run: cargo doc --all-features --workspace
+      - name: Build rustdocs
+        run: ./scripts/build-docs.sh
       - name: Organize
         run: |
           rm -rf target/gh-pages
           mkdir target/gh-pages
+          mv target/doc/_redirects target/gh-pages
           mv target/doc target/gh-pages/rustdoc
       - name: Publish
         uses: cloudflare/pages-action@1
