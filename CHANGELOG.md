@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## [0.3.6-rc.1] - 2024-04-08
+## [0.3.6] - 2024-04-08
 
 - Updated repository to [https://github.com/nextest-rs/quick-junit](https://github.com/nextest-rs/quick-junit).
 
