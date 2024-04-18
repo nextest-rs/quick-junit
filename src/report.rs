@@ -4,8 +4,9 @@
 use crate::{serialize::serialize_report, SerializeError};
 use chrono::{DateTime, FixedOffset};
 use indexmap::map::IndexMap;
-use newtype_uuid::{TypedUuid, TypedUuidKind, TypedUuidTag};
+use newtype_uuid::{GenericUuid, TypedUuid, TypedUuidKind, TypedUuidTag};
 use std::{io, iter, time::Duration};
+use uuid::Uuid;
 
 /// A tag indicating the kind of report.
 pub enum ReportKind {}
@@ -72,8 +73,16 @@ impl Report {
     /// Sets a unique ID for this `Report`.
     ///
     /// This is an extension that's used by nextest.
-    pub fn set_uuid(&mut self, uuid: ReportUuid) -> &mut Self {
+    pub fn set_report_uuid(&mut self, uuid: ReportUuid) -> &mut Self {
         self.uuid = Some(uuid);
+        self
+    }
+
+    /// Sets a unique ID for this `Report` from an untyped [`Uuid`].
+    ///
+    /// This is an extension that's used by nextest.
+    pub fn set_uuid(&mut self, uuid: Uuid) -> &mut Self {
+        self.uuid = Some(ReportUuid::from_untyped_uuid(uuid));
         self
     }
 

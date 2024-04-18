@@ -177,6 +177,7 @@ dependencies = [
  "quick-xml",
  "strip-ansi-escapes",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]
