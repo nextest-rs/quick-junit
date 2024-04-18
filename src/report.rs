@@ -4,8 +4,21 @@
 use crate::{serialize::serialize_report, SerializeError};
 use chrono::{DateTime, FixedOffset};
 use indexmap::map::IndexMap;
+use newtype_uuid::{TypedUuid, TypedUuidKind, TypedUuidTag};
 use std::{io, iter, time::Duration};
-use uuid::Uuid;
+
+/// A tag indicating the kind of report.
+pub enum ReportKind {}
+
+impl TypedUuidKind for ReportKind {
+    fn tag() -> TypedUuidTag {
+        const TAG: TypedUuidTag = TypedUuidTag::new("quick-junit-report");
+        TAG
+    }
+}
+
+/// A unique identifier associated with a report.
+pub type ReportUuid = TypedUuid<ReportKind>;
 
 /// The root element of a JUnit report.
 #[derive(Clone, Debug)]
@@ -16,7 +29,7 @@ pub struct Report {
     /// A unique identifier associated with this report.
     ///
     /// This is an extension to the spec that's used by nextest.
-    pub uuid: Option<Uuid>,
+    pub uuid: Option<ReportUuid>,
 
     /// The time at which the first test in this report began execution.
     ///
@@ -59,7 +72,7 @@ impl Report {
     /// Sets a unique ID for this `Report`.
     ///
     /// This is an extension that's used by nextest.
-    pub fn set_uuid(&mut self, uuid: Uuid) -> &mut Self {
+    pub fn set_uuid(&mut self, uuid: ReportUuid) -> &mut Self {
         self.uuid = Some(uuid);
         self
     }

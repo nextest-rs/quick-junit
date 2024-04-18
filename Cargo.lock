@@ -133,6 +133,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c8640c5d730cb13ebd907d8d04b52f55ac9a2eec55b440c8892f40d56c76c1d"
 
 [[package]]
+name = "newtype-uuid"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3526cb7c660872e401beaf3297f95f548ce3b4b4bdd8121b7c0713771d7c4a6e"
+dependencies = [
+ "uuid",
+]
+
+[[package]]
 name = "num-traits"
 version = "0.2.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -163,11 +172,11 @@ dependencies = [
  "chrono",
  "goldenfile",
  "indexmap",
+ "newtype-uuid",
  "owo-colors",
  "quick-xml",
  "strip-ansi-escapes",
  "thiserror",
- "uuid",
 ]
 
 [[package]]

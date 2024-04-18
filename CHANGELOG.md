@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## [0.4.0] - 2024-04-18
+
+### Changed
+
+- Use newtype-uuid for the report UUID.
+
 ## [0.3.6] - 2024-04-08
 
 - Updated repository to [https://github.com/nextest-rs/quick-junit](https://github.com/nextest-rs/quick-junit).
@@ -97,7 +103,8 @@
 
 - Initial version.
 
-[0.3.6-rc.1]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.3.6-rc.1
+[0.4.0]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.4.0
+[0.3.6]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.3.6
 [0.3.5]: https://github.com/nextest-rs/nextest/releases/tag/quick-junit-0.3.5
 [0.3.4]: https://github.com/nextest-rs/nextest/releases/tag/quick-junit-0.3.4
 [0.3.3]: https://github.com/nextest-rs/nextest/releases/tag/quick-junit-0.3.3
