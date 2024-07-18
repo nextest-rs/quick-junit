@@ -16,7 +16,7 @@ chrono = { version = "0.4.38", default-features = false, features = ["std"] }
 indexmap = "2.2.6"
 quick-xml = "0.36.0"
 newtype-uuid = "1.1.0"
-thiserror = "1.0.62"
+thiserror = "1.0.63"
 strip-ansi-escapes = "0.2.0"
 uuid = "1.10.0"
 
