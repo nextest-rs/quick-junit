@@ -109,6 +109,7 @@
 
 - Initial version.
 
+[0.5.0]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.5.0
 [0.4.0]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.4.0
 [0.3.6]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.3.6
 [0.3.5]: https://github.com/nextest-rs/nextest/releases/tag/quick-junit-0.3.5

@@ -62,7 +62,7 @@ assert_eq!(report.to_string().unwrap(), EXPECTED_XML);
 ```
 
 For a more comprehensive example, including reruns and flaky tests, see
-[`fixture_tests.rs`](https://github.com/nextest-rs/nextest/blob/main/quick-junit/tests/fixture_tests.rs).
+[`fixture_tests.rs`](https://github.com/nextest-rs/quick-junit/blob/main/tests/fixture_tests.rs).
 
 ## Minimum supported Rust version (MSRV)
 
