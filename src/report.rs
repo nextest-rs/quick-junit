@@ -262,8 +262,8 @@ impl TestSuite {
     }
 
     /// Sets standard output.
-    pub fn set_system_out(&mut self, system_out: impl AsRef<str>) -> &mut Self {
-        self.system_out = Some(XmlString::new(system_out.as_ref()));
+    pub fn set_system_out(&mut self, system_out: impl Into<XmlString>) -> &mut Self {
+        self.system_out = Some(system_out.into());
         self
     }
 
@@ -275,8 +275,8 @@ impl TestSuite {
     }
 
     /// Sets standard error.
-    pub fn set_system_err(&mut self, system_err: impl AsRef<str>) -> &mut Self {
-        self.system_err = Some(XmlString::new(system_err.as_ref()));
+    pub fn set_system_err(&mut self, system_err: impl Into<XmlString>) -> &mut Self {
+        self.system_err = Some(system_err.into());
         self
     }
 
@@ -621,8 +621,8 @@ impl TestRerun {
     }
 
     /// Sets standard output.
-    pub fn set_system_out(&mut self, system_out: impl AsRef<str>) -> &mut Self {
-        self.system_out = Some(XmlString::new(system_out.as_ref()));
+    pub fn set_system_out(&mut self, system_out: impl Into<XmlString>) -> &mut Self {
+        self.system_out = Some(system_out.into());
         self
     }
 
@@ -634,8 +634,8 @@ impl TestRerun {
     }
 
     /// Sets standard error.
-    pub fn set_system_err(&mut self, system_err: impl AsRef<str>) -> &mut Self {
-        self.system_err = Some(XmlString::new(system_err.as_ref()));
+    pub fn set_system_err(&mut self, system_err: impl Into<XmlString>) -> &mut Self {
+        self.system_err = Some(system_err.into());
         self
     }
 
