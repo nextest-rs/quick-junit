@@ -4,8 +4,8 @@
 //! Serialize a `Report`.
 
 use crate::{
-    NonSuccessKind, Output, Property, Report, SerializeError, TestCase, TestCaseStatus, TestRerun,
-    TestSuite,
+    NonSuccessKind, Property, Report, SerializeError, TestCase, TestCaseStatus, TestRerun,
+    TestSuite, XmlString,
 };
 use chrono::{DateTime, FixedOffset};
 use quick_xml::{
@@ -382,7 +382,7 @@ fn serialize_rerun(
 }
 
 fn serialize_output(
-    output: &Output,
+    output: &XmlString,
     tag_name: &'static str,
     writer: &mut Writer<impl io::Write>,
 ) -> quick_xml::Result<()> {

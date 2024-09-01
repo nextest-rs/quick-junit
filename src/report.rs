@@ -5,7 +5,7 @@ use crate::{serialize::serialize_report, SerializeError};
 use chrono::{DateTime, FixedOffset};
 use indexmap::map::IndexMap;
 use newtype_uuid::{GenericUuid, TypedUuid, TypedUuidKind, TypedUuidTag};
-use std::{io, iter, time::Duration};
+use std::{borrow::Borrow, hash::Hash, io, iter, ops::Deref, time::Duration};
 use uuid::Uuid;
 
 /// A tag indicating the kind of report.
@@ -25,7 +25,7 @@ pub type ReportUuid = TypedUuid<ReportKind>;
 #[derive(Clone, Debug)]
 pub struct Report {
     /// The name of this report.
-    pub name: String,
+    pub name: XmlString,
 
     /// A unique identifier associated with this report.
     ///
@@ -57,7 +57,7 @@ pub struct Report {
 
 impl Report {
     /// Creates a new `Report` with the given name.
-    pub fn new(name: impl Into<String>) -> Self {
+    pub fn new(name: impl Into<XmlString>) -> Self {
         Self {
             name: name.into(),
             uuid: None,
@@ -144,7 +144,7 @@ impl Report {
 #[non_exhaustive]
 pub struct TestSuite {
     /// The name of this TestSuite.
-    pub name: String,
+    pub name: XmlString,
 
     /// The total number of tests in this TestSuite.
     pub tests: usize,
@@ -175,18 +175,18 @@ pub struct TestSuite {
     pub properties: Vec<Property>,
 
     /// Data written to standard output while the TestSuite was executed.
-    pub system_out: Option<Output>,
+    pub system_out: Option<XmlString>,
 
     /// Data written to standard error while the TestSuite was executed.
-    pub system_err: Option<Output>,
+    pub system_err: Option<XmlString>,
 
     /// Other fields that may be set as attributes, such as "hostname" or "package".
-    pub extra: IndexMap<String, String>,
+    pub extra: IndexMap<XmlString, XmlString>,
 }
 
 impl TestSuite {
     /// Creates a new `TestSuite`.
-    pub fn new(name: impl Into<String>) -> Self {
+    pub fn new(name: impl Into<XmlString>) -> Self {
         Self {
             name: name.into(),
             time: None,
@@ -263,7 +263,7 @@ impl TestSuite {
 
     /// Sets standard output.
     pub fn set_system_out(&mut self, system_out: impl AsRef<str>) -> &mut Self {
-        self.system_out = Some(Output::new(system_out.as_ref()));
+        self.system_out = Some(XmlString::new(system_out.as_ref()));
         self
     }
 
@@ -276,7 +276,7 @@ impl TestSuite {
 
     /// Sets standard error.
     pub fn set_system_err(&mut self, system_err: impl AsRef<str>) -> &mut Self {
-        self.system_err = Some(Output::new(system_err.as_ref()));
+        self.system_err = Some(XmlString::new(system_err.as_ref()));
         self
     }
 
@@ -293,13 +293,13 @@ impl TestSuite {
 #[non_exhaustive]
 pub struct TestCase {
     /// The name of the test case.
-    pub name: String,
+    pub name: XmlString,
 
     /// The "classname" of the test case.
     ///
     /// Typically, this represents the fully qualified path to the test. In other words,
     /// `classname` + `name` together should uniquely identify and locate a test.
-    pub classname: Option<String>,
+    pub classname: Option<XmlString>,
 
     /// The number of assertions in the test case.
     pub assertions: Option<usize>,
@@ -316,13 +316,13 @@ pub struct TestCase {
     pub status: TestCaseStatus,
 
     /// Data written to standard output while the test case was executed.
-    pub system_out: Option<Output>,
+    pub system_out: Option<XmlString>,
 
     /// Data written to standard error while the test case was executed.
-    pub system_err: Option<Output>,
+    pub system_err: Option<XmlString>,
 
     /// Other fields that may be set as attributes, such as "classname".
-    pub extra: IndexMap<String, String>,
+    pub extra: IndexMap<XmlString, XmlString>,
 
     /// Custom properties set during test execution, e.g. steps.
     pub properties: Vec<Property>,
@@ -330,7 +330,7 @@ pub struct TestCase {
 
 impl TestCase {
     /// Creates a new test case.
-    pub fn new(name: impl Into<String>, status: TestCaseStatus) -> Self {
+    pub fn new(name: impl Into<XmlString>, status: TestCaseStatus) -> Self {
         Self {
             name: name.into(),
             classname: None,
@@ -346,7 +346,7 @@ impl TestCase {
     }
 
     /// Sets the classname of the test.
-    pub fn set_classname(&mut self, classname: impl Into<String>) -> &mut Self {
+    pub fn set_classname(&mut self, classname: impl Into<XmlString>) -> &mut Self {
         self.classname = Some(classname.into());
         self
     }
@@ -370,8 +370,8 @@ impl TestCase {
     }
 
     /// Sets standard output.
-    pub fn set_system_out(&mut self, system_out: impl AsRef<str>) -> &mut Self {
-        self.system_out = Some(Output::new(system_out.as_ref()));
+    pub fn set_system_out(&mut self, system_out: impl Into<XmlString>) -> &mut Self {
+        self.system_out = Some(system_out.into());
         self
     }
 
@@ -383,8 +383,8 @@ impl TestCase {
     }
 
     /// Sets standard error.
-    pub fn set_system_err(&mut self, system_err: impl AsRef<str>) -> &mut Self {
-        self.system_err = Some(Output::new(system_err.as_ref()));
+    pub fn set_system_err(&mut self, system_out: impl Into<XmlString>) -> &mut Self {
+        self.system_err = Some(system_out.into());
         self
     }
 
@@ -429,15 +429,15 @@ pub enum TestCaseStatus {
         kind: NonSuccessKind,
 
         /// The failure message.
-        message: Option<String>,
+        message: Option<XmlString>,
 
         /// The "type" of failure that occurred.
-        ty: Option<String>,
+        ty: Option<XmlString>,
 
         /// The description of the failure.
         ///
         /// This is serialized and deserialized from the text node of the element.
-        description: Option<String>,
+        description: Option<XmlString>,
 
         /// Test reruns. These are represented as `rerunFailure` or `rerunError` in the JUnit XML.
         reruns: Vec<TestRerun>,
@@ -446,15 +446,15 @@ pub enum TestCaseStatus {
     /// This test case was not run.
     Skipped {
         /// The skip message.
-        message: Option<String>,
+        message: Option<XmlString>,
 
         /// The "type" of skip that occurred.
-        ty: Option<String>,
+        ty: Option<XmlString>,
 
         /// The description of the skip.
         ///
         /// This is serialized and deserialized from the text node of the element.
-        description: Option<String>,
+        description: Option<XmlString>,
     },
 }
 
@@ -485,7 +485,7 @@ impl TestCaseStatus {
     }
 
     /// Sets the message. No-op if this is a success case.
-    pub fn set_message(&mut self, message: impl Into<String>) -> &mut Self {
+    pub fn set_message(&mut self, message: impl Into<XmlString>) -> &mut Self {
         let message_mut = match self {
             TestCaseStatus::Success { .. } => return self,
             TestCaseStatus::NonSuccess { message, .. } => message,
@@ -496,7 +496,7 @@ impl TestCaseStatus {
     }
 
     /// Sets the type. No-op if this is a success case.
-    pub fn set_type(&mut self, ty: impl Into<String>) -> &mut Self {
+    pub fn set_type(&mut self, ty: impl Into<XmlString>) -> &mut Self {
         let ty_mut = match self {
             TestCaseStatus::Success { .. } => return self,
             TestCaseStatus::NonSuccess { ty, .. } => ty,
@@ -507,7 +507,7 @@ impl TestCaseStatus {
     }
 
     /// Sets the description (text node). No-op if this is a success case.
-    pub fn set_description(&mut self, description: impl Into<String>) -> &mut Self {
+    pub fn set_description(&mut self, description: impl Into<XmlString>) -> &mut Self {
         let description_mut = match self {
             TestCaseStatus::Success { .. } => return self,
             TestCaseStatus::NonSuccess { description, .. } => description,
@@ -554,24 +554,24 @@ pub struct TestRerun {
     pub time: Option<Duration>,
 
     /// The failure message.
-    pub message: Option<String>,
+    pub message: Option<XmlString>,
 
     /// The "type" of failure that occurred.
-    pub ty: Option<String>,
+    pub ty: Option<XmlString>,
 
     /// The stack trace, if any.
-    pub stack_trace: Option<String>,
+    pub stack_trace: Option<XmlString>,
 
     /// Data written to standard output while the test rerun was executed.
-    pub system_out: Option<Output>,
+    pub system_out: Option<XmlString>,
 
     /// Data written to standard error while the test rerun was executed.
-    pub system_err: Option<Output>,
+    pub system_err: Option<XmlString>,
 
     /// The description of the failure.
     ///
     /// This is serialized and deserialized from the text node of the element.
-    pub description: Option<String>,
+    pub description: Option<XmlString>,
 }
 
 impl TestRerun {
@@ -603,26 +603,26 @@ impl TestRerun {
     }
 
     /// Sets the message.
-    pub fn set_message(&mut self, message: impl Into<String>) -> &mut Self {
+    pub fn set_message(&mut self, message: impl Into<XmlString>) -> &mut Self {
         self.message = Some(message.into());
         self
     }
 
     /// Sets the type.
-    pub fn set_type(&mut self, ty: impl Into<String>) -> &mut Self {
+    pub fn set_type(&mut self, ty: impl Into<XmlString>) -> &mut Self {
         self.ty = Some(ty.into());
         self
     }
 
     /// Sets the stack trace.
-    pub fn set_stack_trace(&mut self, stack_trace: impl Into<String>) -> &mut Self {
+    pub fn set_stack_trace(&mut self, stack_trace: impl Into<XmlString>) -> &mut Self {
         self.stack_trace = Some(stack_trace.into());
         self
     }
 
     /// Sets standard output.
     pub fn set_system_out(&mut self, system_out: impl AsRef<str>) -> &mut Self {
-        self.system_out = Some(Output::new(system_out.as_ref()));
+        self.system_out = Some(XmlString::new(system_out.as_ref()));
         self
     }
 
@@ -635,7 +635,7 @@ impl TestRerun {
 
     /// Sets standard error.
     pub fn set_system_err(&mut self, system_err: impl AsRef<str>) -> &mut Self {
-        self.system_err = Some(Output::new(system_err.as_ref()));
+        self.system_err = Some(XmlString::new(system_err.as_ref()));
         self
     }
 
@@ -647,7 +647,7 @@ impl TestRerun {
     }
 
     /// Sets the description of the failure.
-    pub fn set_description(&mut self, description: impl Into<String>) -> &mut Self {
+    pub fn set_description(&mut self, description: impl Into<XmlString>) -> &mut Self {
         self.description = Some(description.into());
         self
     }
@@ -673,15 +673,15 @@ pub enum NonSuccessKind {
 #[derive(Clone, Debug)]
 pub struct Property {
     /// The name of the property.
-    pub name: String,
+    pub name: XmlString,
 
     /// The value of the property.
-    pub value: String,
+    pub value: XmlString,
 }
 
 impl Property {
     /// Creates a new `Property` instance.
-    pub fn new(name: impl Into<String>, value: impl Into<String>) -> Self {
+    pub fn new(name: impl Into<XmlString>, value: impl Into<XmlString>) -> Self {
         Self {
             name: name.into(),
             value: value.into(),
@@ -691,58 +691,146 @@ impl Property {
 
 impl<T> From<(T, T)> for Property
 where
-    T: Into<String>,
+    T: Into<XmlString>,
 {
     fn from((k, v): (T, T)) -> Self {
         Property::new(k, v)
     }
 }
 
-/// Represents text that is written out to standard output or standard error during text execution.
+/// An owned string suitable for inclusion in XML.
+///
+/// This type filters out invalid XML characters (e.g. ANSI escape codes), and is useful in places
+/// where those codes might be seen -- for example, standard output and standard error.
 ///
 /// # Encoding
 ///
 /// On Unix platforms, standard output and standard error are typically bytestrings (`Vec<u8>`).
-/// However, XUnit assumes that the output is valid Unicode, and this type definition reflects
-/// that.
-#[derive(Clone, Debug)]
-pub struct Output {
-    output: Box<str>,
+/// However, XUnit assumes that the output is valid Unicode, and this type definition reflects that.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct XmlString {
+    data: Box<str>,
 }
 
-impl Output {
-    /// Creates a new output, removing any ANSI escapes and non-printable characters from it.
-    pub fn new(output: impl AsRef<str>) -> Self {
-        let output = output.as_ref();
-        let output = strip_ansi_escapes::strip_str(output);
-        let output = output
+impl XmlString {
+    /// Creates a new `XmlString`, removing any ANSI escapes and non-printable characters from it.
+    pub fn new(data: impl AsRef<str>) -> Self {
+        let data = data.as_ref();
+        let data = strip_ansi_escapes::strip_str(data);
+        let data = data
             .replace(
                 |c| matches!(c, '\x00'..='\x08' | '\x0b' | '\x0c' | '\x0e'..='\x1f'),
                 "",
             )
             .into_boxed_str();
-        Self { output }
+        Self { data }
     }
 
-    /// Returns the output.
+    /// Returns the data as a string.
     pub fn as_str(&self) -> &str {
-        &self.output
+        &self.data
     }
 
-    /// Converts the output into a string.
+    /// Converts self into a string.
     pub fn into_string(self) -> String {
-        self.output.into_string()
+        self.data.into_string()
     }
 }
 
-impl AsRef<str> for Output {
-    fn as_ref(&self) -> &str {
-        self.as_str()
+impl<T: AsRef<str>> From<T> for XmlString {
+    fn from(s: T) -> Self {
+        XmlString::new(s)
     }
 }
 
-impl From<Output> for String {
-    fn from(output: Output) -> Self {
-        output.into_string()
+impl From<XmlString> for String {
+    fn from(s: XmlString) -> Self {
+        s.into_string()
+    }
+}
+
+impl Deref for XmlString {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+
+impl Borrow<str> for XmlString {
+    fn borrow(&self) -> &str {
+        &self.data
+    }
+}
+
+impl PartialOrd for XmlString {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.data.partial_cmp(&other.data)
+    }
+}
+
+impl Ord for XmlString {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.data.cmp(&other.data)
+    }
+}
+
+impl Hash for XmlString {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        // Need to hash the data as a `str` to obey the `Borrow<str>` invariant.
+        self.data.hash(state);
+    }
+}
+
+impl PartialEq<str> for XmlString {
+    fn eq(&self, other: &str) -> bool {
+        &*self.data == other
+    }
+}
+
+impl PartialEq<XmlString> for str {
+    fn eq(&self, other: &XmlString) -> bool {
+        self == &*other.data
+    }
+}
+
+impl PartialEq<String> for XmlString {
+    fn eq(&self, other: &String) -> bool {
+        &*self.data == other
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proptest::prop_assume;
+    use std::hash::Hasher;
+    use test_strategy::proptest;
+
+    // Borrow requires Hash and Ord to be consistent -- use properties to ensure that.
+
+    #[proptest]
+    fn xml_string_hash(s: String) {
+        let xml_string = XmlString::new(&s);
+        // If the string has invalid XML characters, it will no longer be the same so reject those
+        // cases.
+        prop_assume!(xml_string == s);
+
+        let mut hasher1 = std::collections::hash_map::DefaultHasher::new();
+        let mut hasher2 = std::collections::hash_map::DefaultHasher::new();
+        s.as_str().hash(&mut hasher1);
+        xml_string.hash(&mut hasher2);
+        assert_eq!(hasher1.finish(), hasher2.finish());
+    }
+
+    #[proptest]
+    fn xml_string_ord(s1: String, s2: String) {
+        let xml_string1 = XmlString::new(&s1);
+        let xml_string2 = XmlString::new(&s2);
+        // If the string has invalid XML characters, it will no longer be the same so reject those
+        // cases.
+        prop_assume!(xml_string1 == s1 && xml_string2 == s2);
+
+        assert_eq!(s1.as_str().cmp(s2.as_str()), xml_string1.cmp(&xml_string2));
     }
 }
