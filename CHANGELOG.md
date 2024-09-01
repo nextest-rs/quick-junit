@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## [0.5.0] - 2024-09-01
+
+### Changed
+
+- The `Output` type, which strips invalid XML characters from a string, has been renamed to
+  `XmlString`.
+- All internal storage now uses `XmlString` rather than `String`.
 
 ## [0.4.0] - 2024-04-18
 
