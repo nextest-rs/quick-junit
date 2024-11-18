@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.1] - 2024-11-18
+
+### Updated
+
+Internal dependency update: `quick-xml` updated to 0.37.1.
+
 ## [0.5.0] - 2024-09-01
 
 ### Changed
