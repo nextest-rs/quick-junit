@@ -12,7 +12,7 @@ edition = "2021"
 rust-version = "1.70"
 
 [dependencies]
-chrono = { version = "0.4.38", default-features = false, features = ["std"] }
+chrono = { version = "0.4.39", default-features = false, features = ["std"] }
 indexmap = "2.5.0"
 quick-xml = "0.37.1"
 newtype-uuid = "1.1.3"
