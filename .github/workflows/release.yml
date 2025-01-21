@@ -20,7 +20,7 @@ jobs:
         uses: taiki-e/install-action@a7adeb15af2926b0ac7478ad165047cd2d8ba350 # v2
         with:
           tool: cargo-release@0.25.0
-      - uses: taiki-e/create-gh-release-action@d33396ec937b3c8de323c14ec623aa6bfb93d9a1 # v1
+      - uses: taiki-e/create-gh-release-action@b7abb0cf5e72cb5500307b577f9ca3fd4c5be9d2 # v1
         with:
           prefix: quick-junit
           changelog: CHANGELOG.md
