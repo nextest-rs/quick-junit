@@ -21,7 +21,7 @@ strip-ansi-escapes = "0.2.1"
 uuid = "1.13.2"
 
 [dev-dependencies]
-goldenfile = "1.7.3"
+goldenfile = "1.8.0"
 owo-colors = "4.1.0"
 proptest = "1.5.0"
 test-strategy = "0.4.1"
