@@ -485,9 +485,9 @@ dependencies = [
 
 [[package]]
 name = "test-strategy"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f6877d3ba810dd7b43d3df771a65f2f67dc05f6a7b358da6286a14d4ec1b654"
+checksum = "43b12f9683de37f9980e485167ee624bfaa0b6b04da661e98e25ef9c2669bc1b"
 dependencies = [
  "derive-ex",
  "proc-macro2",
