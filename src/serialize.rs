@@ -52,6 +52,7 @@ pub(crate) fn serialize_report_impl(
     // Use the destructuring syntax to ensure that all fields are handled.
     let Report {
         name,
+        #[cfg(feature = "uuids")]
         uuid,
         timestamp,
         time,
@@ -68,6 +69,7 @@ pub(crate) fn serialize_report_impl(
         ("failures", failures.to_string().as_str()),
         ("errors", errors.to_string().as_str()),
     ]);
+    #[cfg(feature = "uuids")]
     if let Some(uuid) = uuid {
         testsuites_tag.push_attribute(("uuid", uuid.to_string().as_str()));
     }

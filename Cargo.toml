@@ -11,14 +11,18 @@ categories = ["encoding", "development-tools"]
 edition = "2021"
 rust-version = "1.70"
 
+[features]
+default = ["uuids"]
+uuids = ["dep:uuid", "dep:newtype-uuid"]
+
 [dependencies]
 chrono = { version = "0.4.41", default-features = false, features = ["std"] }
 indexmap = "2.7.1"
 quick-xml = "0.38.1"
-newtype-uuid = "1.2.4"
+newtype-uuid = { version = "1.2.4", optional = true }
 thiserror = "2.0.12"
 strip-ansi-escapes = "0.2.1"
-uuid = "1.17.0"
+uuid = { version = "1.17.0", optional = true }
 
 [dev-dependencies]
 goldenfile = "1.7.3"

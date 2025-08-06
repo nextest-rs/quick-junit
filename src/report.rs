@@ -4,13 +4,17 @@
 use crate::{serialize::serialize_report, SerializeError};
 use chrono::{DateTime, FixedOffset};
 use indexmap::map::IndexMap;
+#[cfg(feature = "uuids")]
 use newtype_uuid::{GenericUuid, TypedUuid, TypedUuidKind, TypedUuidTag};
 use std::{borrow::Borrow, hash::Hash, io, iter, ops::Deref, time::Duration};
+#[cfg(feature = "uuids")]
 use uuid::Uuid;
 
 /// A tag indicating the kind of report.
+#[cfg(feature = "uuids")]
 pub enum ReportKind {}
 
+#[cfg(feature = "uuids")]
 impl TypedUuidKind for ReportKind {
     fn tag() -> TypedUuidTag {
         const TAG: TypedUuidTag = TypedUuidTag::new("quick-junit-report");
@@ -19,6 +23,7 @@ impl TypedUuidKind for ReportKind {
 }
 
 /// A unique identifier associated with a report.
+#[cfg(feature = "uuids")]
 pub type ReportUuid = TypedUuid<ReportKind>;
 
 /// The root element of a JUnit report.
@@ -30,6 +35,7 @@ pub struct Report {
     /// A unique identifier associated with this report.
     ///
     /// This is an extension to the spec that's used by nextest.
+    #[cfg(feature = "uuids")]
     pub uuid: Option<ReportUuid>,
 
     /// The time at which the first test in this report began execution.
@@ -60,6 +66,7 @@ impl Report {
     pub fn new(name: impl Into<XmlString>) -> Self {
         Self {
             name: name.into(),
+            #[cfg(feature = "uuids")]
             uuid: None,
             timestamp: None,
             time: None,
@@ -73,6 +80,7 @@ impl Report {
     /// Sets a unique ID for this `Report`.
     ///
     /// This is an extension that's used by nextest.
+    #[cfg(feature = "uuids")]
     pub fn set_report_uuid(&mut self, uuid: ReportUuid) -> &mut Self {
         self.uuid = Some(uuid);
         self
@@ -81,6 +89,7 @@ impl Report {
     /// Sets a unique ID for this `Report` from an untyped [`Uuid`].
     ///
     /// This is an extension that's used by nextest.
+    #[cfg(feature = "uuids")]
     pub fn set_uuid(&mut self, uuid: Uuid) -> &mut Self {
         self.uuid = Some(ReportUuid::from_untyped_uuid(uuid));
         self
