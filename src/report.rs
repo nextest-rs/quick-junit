@@ -740,6 +740,7 @@ impl XmlString {
     /// Creates a new `XmlString`, removing any ANSI escapes and non-printable characters from it.
     pub fn new(data: impl AsRef<str>) -> Self {
         let data = data.as_ref();
+        #[cfg(feature = "strip-ansi")]
         let data = strip_ansi_escapes::strip_str(data);
         let data = data
             .replace(
