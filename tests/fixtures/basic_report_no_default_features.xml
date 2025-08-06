@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="my-test-run" tests="7" failures="2" errors="1" uuid="0500990f-0df3-4722-bbeb-90a75b8aa6bd" timestamp="2021-04-01T10:52:37.000-08:00" time="42.235">
-    <testsuite name="testsuite0" tests="7" disabled="1" errors="1" failures="2" timestamp="2021-04-01T10:52:39.000-08:00">
+<testsuites name="my-test-run" tests="7" failures="2" errors="1" time="42.235">
+    <testsuite name="testsuite0" tests="7" disabled="1" errors="1" failures="2">
         <properties>
             <property name="env" value="FOOBAR"/>
         </properties>
@@ -14,7 +14,7 @@
         <testcase name="testcase2" time="0.000">
             <error type="error type">testcase2 error description</error>
         </testcase>
-        <testcase name="testcase3" assertions="20" timestamp="2021-04-01T11:52:41.000-07:00">
+        <testcase name="testcase3" assertions="20">
             <skipped message="skipped message" type="skipped type"/>
             <system-out>testcase3 output</system-out>
             <system-err>testcase3 error</system-err>
@@ -24,7 +24,7 @@
             <flakyError type="flaky error type">flaky error description
                 <stackTrace>flaky stack trace</stackTrace>
                 <system-out>flaky system output</system-out>
-                <system-err>flaky system error with ANSI escape codes</system-err>
+                <system-err>flaky system error with [34mANSI escape codes[39m</system-err>
             </flakyError>
         </testcase>
         <testcase name="testcase5" time="0.156">
