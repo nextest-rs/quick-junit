@@ -7,6 +7,7 @@ use crate::{
     NonSuccessKind, Property, Report, SerializeError, TestCase, TestCaseStatus, TestRerun,
     TestSuite, XmlString,
 };
+#[cfg(feature = "timestamps")]
 use chrono::{DateTime, FixedOffset};
 use quick_xml::{
     events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event},
@@ -54,6 +55,7 @@ pub(crate) fn serialize_report_impl(
         name,
         #[cfg(feature = "uuids")]
         uuid,
+        #[cfg(feature = "timestamps")]
         timestamp,
         time,
         tests,
@@ -73,6 +75,7 @@ pub(crate) fn serialize_report_impl(
     if let Some(uuid) = uuid {
         testsuites_tag.push_attribute(("uuid", uuid.to_string().as_str()));
     }
+    #[cfg(feature = "timestamps")]
     if let Some(timestamp) = timestamp {
         serialize_timestamp(&mut testsuites_tag, timestamp);
     }
@@ -103,6 +106,7 @@ pub(crate) fn serialize_test_suite(
         errors,
         failures,
         time,
+        #[cfg(feature = "timestamps")]
         timestamp,
         test_cases,
         properties,
@@ -120,6 +124,7 @@ pub(crate) fn serialize_test_suite(
         ("failures", failures.to_string().as_str()),
     ]);
 
+    #[cfg(feature = "timestamps")]
     if let Some(timestamp) = timestamp {
         serialize_timestamp(&mut test_suite_tag, timestamp);
     }
@@ -174,6 +179,7 @@ fn serialize_test_case(
         name,
         classname,
         assertions,
+        #[cfg(feature = "timestamps")]
         timestamp,
         time,
         status,
@@ -192,6 +198,7 @@ fn serialize_test_case(
         testcase_tag.push_attribute(("assertions", format!("{assertions}").as_str()));
     }
 
+    #[cfg(feature = "timestamps")]
     if let Some(timestamp) = timestamp {
         serialize_timestamp(&mut testcase_tag, timestamp);
     }
@@ -308,6 +315,7 @@ fn serialize_rerun(
     writer: &mut Writer<impl io::Write>,
 ) -> quick_xml::Result<()> {
     let TestRerun {
+        #[cfg(feature = "timestamps")]
         timestamp,
         time,
         kind,
@@ -327,6 +335,7 @@ fn serialize_rerun(
     };
 
     let mut tag = BytesStart::new(tag_name);
+    #[cfg(feature = "timestamps")]
     if let Some(timestamp) = timestamp {
         serialize_timestamp(&mut tag, timestamp);
     }
@@ -411,6 +420,7 @@ fn serialize_end_tag(
     writer.write_event(Event::End(end_tag))
 }
 
+#[cfg(feature = "timestamps")]
 fn serialize_timestamp(tag: &mut BytesStart<'_>, timestamp: &DateTime<FixedOffset>) {
     // The format string is obtained from https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html#fn8.
     // The only change is that this only prints timestamps up to 3 decimal places (to match times).

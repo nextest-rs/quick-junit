@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{serialize::serialize_report, SerializeError};
+#[cfg(feature = "timestamps")]
 use chrono::{DateTime, FixedOffset};
 use indexmap::map::IndexMap;
 #[cfg(feature = "uuids")]
@@ -41,6 +42,7 @@ pub struct Report {
     /// The time at which the first test in this report began execution.
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
+    #[cfg(feature = "timestamps")]
     pub timestamp: Option<DateTime<FixedOffset>>,
 
     /// The overall time taken by the test suite.
@@ -68,6 +70,7 @@ impl Report {
             name: name.into(),
             #[cfg(feature = "uuids")]
             uuid: None,
+            #[cfg(feature = "timestamps")]
             timestamp: None,
             time: None,
             tests: 0,
@@ -96,6 +99,7 @@ impl Report {
     }
 
     /// Sets the start timestamp for the report.
+    #[cfg(feature = "timestamps")]
     pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
@@ -174,6 +178,7 @@ pub struct TestSuite {
     pub failures: usize,
 
     /// The time at which the TestSuite began execution.
+    #[cfg(feature = "timestamps")]
     pub timestamp: Option<DateTime<FixedOffset>>,
 
     /// The overall time taken by the TestSuite.
@@ -201,6 +206,7 @@ impl TestSuite {
         Self {
             name: name.into(),
             time: None,
+            #[cfg(feature = "timestamps")]
             timestamp: None,
             tests: 0,
             disabled: 0,
@@ -215,6 +221,7 @@ impl TestSuite {
     }
 
     /// Sets the start timestamp for the TestSuite.
+    #[cfg(feature = "timestamps")]
     pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
@@ -318,6 +325,7 @@ pub struct TestCase {
     /// The time at which this test case began execution.
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
+    #[cfg(feature = "timestamps")]
     pub timestamp: Option<DateTime<FixedOffset>>,
 
     /// The time it took to execute this test case.
@@ -346,6 +354,7 @@ impl TestCase {
             name: name.into(),
             classname: None,
             assertions: None,
+            #[cfg(feature = "timestamps")]
             timestamp: None,
             time: None,
             status,
@@ -369,6 +378,7 @@ impl TestCase {
     }
 
     /// Sets the start timestamp for the test case.
+    #[cfg(feature = "timestamps")]
     pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
@@ -557,6 +567,7 @@ pub struct TestRerun {
     /// The time at which this rerun began execution.
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
+    #[cfg(feature = "timestamps")]
     pub timestamp: Option<DateTime<FixedOffset>>,
 
     /// The time it took to execute this rerun.
@@ -590,6 +601,7 @@ impl TestRerun {
     pub fn new(kind: NonSuccessKind) -> Self {
         TestRerun {
             kind,
+            #[cfg(feature = "timestamps")]
             timestamp: None,
             time: None,
             message: None,
@@ -602,6 +614,7 @@ impl TestRerun {
     }
 
     /// Sets the start timestamp for this rerun.
+    #[cfg(feature = "timestamps")]
     pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self

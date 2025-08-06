@@ -12,11 +12,12 @@ edition = "2021"
 rust-version = "1.70"
 
 [features]
-default = ["uuids"]
+default = ["timestamps", "uuids"]
+timestamps = ["dep:chrono"]
 uuids = ["dep:uuid", "dep:newtype-uuid"]
 
 [dependencies]
-chrono = { version = "0.4.41", default-features = false, features = ["std"] }
+chrono = { version = "0.4.41", default-features = false, features = ["std"], optional = true }
 indexmap = "2.7.1"
 quick-xml = "0.38.1"
 newtype-uuid = { version = "1.2.4", optional = true }
