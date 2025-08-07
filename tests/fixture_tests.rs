@@ -1,6 +1,7 @@
 // Copyright (c) The nextest Contributors
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+#[cfg(feature = "timestamps")]
 use chrono::DateTime;
 use goldenfile::Mint;
 use owo_colors::OwoColorize;
@@ -13,8 +14,13 @@ use std::time::Duration;
 fn fixtures() {
     let mut mint = Mint::new("tests/fixtures");
 
+    #[cfg(all(feature = "timestamps", feature = "uuids", feature = "strip-ansi"))]
     let f = mint
         .new_goldenfile("basic_report.xml")
+        .expect("creating new goldenfile succeeds");
+    #[cfg(not(any(feature = "timestamps", feature = "uuids", feature = "strip-ansi")))]
+    let f = mint
+        .new_goldenfile("basic_report_no_default_features.xml")
         .expect("creating new goldenfile succeeds");
 
     let basic_report = basic_report();
@@ -25,6 +31,7 @@ fn fixtures() {
 
 fn basic_report() -> Report {
     let mut report = Report::new("my-test-run");
+    #[cfg(feature = "timestamps")]
     report.set_timestamp(
         DateTime::parse_from_rfc2822("Thu, 1 Apr 2021 10:52:37 -0800")
             .expect("valid RFC2822 datetime"),
@@ -32,6 +39,7 @@ fn basic_report() -> Report {
     report.set_time(Duration::new(42, 234_567_890));
 
     let mut test_suite = TestSuite::new("testsuite0");
+    #[cfg(feature = "timestamps")]
     test_suite.set_timestamp(
         DateTime::parse_from_rfc2822("Thu, 1 Apr 2021 10:52:39 -0800")
             .expect("valid RFC2822 datetime"),
@@ -74,11 +82,13 @@ fn basic_report() -> Report {
         .set_message("skipped message");
     // no description to test that.
     let mut test_case = TestCase::new("testcase3", test_case_status);
+    #[cfg(feature = "timestamps")]
     test_case
         .set_timestamp(
             DateTime::parse_from_rfc2822("Thu, 1 Apr 2021 11:52:41 -0700")
                 .expect("valid RFC2822 datetime"),
-        )
+        );
+    test_case
         .set_assertions(20)
         .set_system_out("testcase3 output")
         .set_system_err("testcase3 error");
@@ -138,6 +148,8 @@ fn basic_report() -> Report {
     test_suite.add_property(Property::new("env", "FOOBAR"));
 
     report.add_test_suite(test_suite);
+    #[cfg(feature = "uuids")]
+    report.set_uuid(uuid::Uuid::parse_str("0500990f-0df3-4722-bbeb-90a75b8aa6bd").expect("uuid parsing succeeds"));
 
     report
 }
