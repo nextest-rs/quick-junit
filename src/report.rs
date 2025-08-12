@@ -766,18 +766,21 @@ impl Borrow<str> for XmlString {
 }
 
 impl PartialOrd for XmlString {
+    #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.data.cmp(&other.data))
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for XmlString {
+    #[inline]
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.data.cmp(&other.data)
     }
 }
 
 impl Hash for XmlString {
+    #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         // Need to hash the data as a `str` to obey the `Borrow<str>` invariant.
         self.data.hash(state);
