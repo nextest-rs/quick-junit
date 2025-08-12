@@ -2,15 +2,20 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{serialize::serialize_report, SerializeError};
+#[cfg(feature = "timestamps")]
 use chrono::{DateTime, FixedOffset};
 use indexmap::map::IndexMap;
+#[cfg(feature = "uuids")]
 use newtype_uuid::{GenericUuid, TypedUuid, TypedUuidKind, TypedUuidTag};
 use std::{borrow::Borrow, hash::Hash, io, iter, ops::Deref, time::Duration};
+#[cfg(feature = "uuids")]
 use uuid::Uuid;
 
 /// A tag indicating the kind of report.
+#[cfg(feature = "uuids")]
 pub enum ReportKind {}
 
+#[cfg(feature = "uuids")]
 impl TypedUuidKind for ReportKind {
     fn tag() -> TypedUuidTag {
         const TAG: TypedUuidTag = TypedUuidTag::new("quick-junit-report");
@@ -19,6 +24,7 @@ impl TypedUuidKind for ReportKind {
 }
 
 /// A unique identifier associated with a report.
+#[cfg(feature = "uuids")]
 pub type ReportUuid = TypedUuid<ReportKind>;
 
 /// The root element of a JUnit report.
@@ -30,11 +36,13 @@ pub struct Report {
     /// A unique identifier associated with this report.
     ///
     /// This is an extension to the spec that's used by nextest.
+    #[cfg(feature = "uuids")]
     pub uuid: Option<ReportUuid>,
 
     /// The time at which the first test in this report began execution.
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
+    #[cfg(feature = "timestamps")]
     pub timestamp: Option<DateTime<FixedOffset>>,
 
     /// The overall time taken by the test suite.
@@ -60,7 +68,9 @@ impl Report {
     pub fn new(name: impl Into<XmlString>) -> Self {
         Self {
             name: name.into(),
+            #[cfg(feature = "uuids")]
             uuid: None,
+            #[cfg(feature = "timestamps")]
             timestamp: None,
             time: None,
             tests: 0,
@@ -73,6 +83,7 @@ impl Report {
     /// Sets a unique ID for this `Report`.
     ///
     /// This is an extension that's used by nextest.
+    #[cfg(feature = "uuids")]
     pub fn set_report_uuid(&mut self, uuid: ReportUuid) -> &mut Self {
         self.uuid = Some(uuid);
         self
@@ -81,12 +92,14 @@ impl Report {
     /// Sets a unique ID for this `Report` from an untyped [`Uuid`].
     ///
     /// This is an extension that's used by nextest.
+    #[cfg(feature = "uuids")]
     pub fn set_uuid(&mut self, uuid: Uuid) -> &mut Self {
         self.uuid = Some(ReportUuid::from_untyped_uuid(uuid));
         self
     }
 
     /// Sets the start timestamp for the report.
+    #[cfg(feature = "timestamps")]
     pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
@@ -165,6 +178,7 @@ pub struct TestSuite {
     pub failures: usize,
 
     /// The time at which the TestSuite began execution.
+    #[cfg(feature = "timestamps")]
     pub timestamp: Option<DateTime<FixedOffset>>,
 
     /// The overall time taken by the TestSuite.
@@ -192,6 +206,7 @@ impl TestSuite {
         Self {
             name: name.into(),
             time: None,
+            #[cfg(feature = "timestamps")]
             timestamp: None,
             tests: 0,
             disabled: 0,
@@ -206,6 +221,7 @@ impl TestSuite {
     }
 
     /// Sets the start timestamp for the TestSuite.
+    #[cfg(feature = "timestamps")]
     pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
@@ -309,6 +325,7 @@ pub struct TestCase {
     /// The time at which this test case began execution.
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
+    #[cfg(feature = "timestamps")]
     pub timestamp: Option<DateTime<FixedOffset>>,
 
     /// The time it took to execute this test case.
@@ -337,6 +354,7 @@ impl TestCase {
             name: name.into(),
             classname: None,
             assertions: None,
+            #[cfg(feature = "timestamps")]
             timestamp: None,
             time: None,
             status,
@@ -360,6 +378,7 @@ impl TestCase {
     }
 
     /// Sets the start timestamp for the test case.
+    #[cfg(feature = "timestamps")]
     pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
@@ -548,6 +567,7 @@ pub struct TestRerun {
     /// The time at which this rerun began execution.
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
+    #[cfg(feature = "timestamps")]
     pub timestamp: Option<DateTime<FixedOffset>>,
 
     /// The time it took to execute this rerun.
@@ -581,6 +601,7 @@ impl TestRerun {
     pub fn new(kind: NonSuccessKind) -> Self {
         TestRerun {
             kind,
+            #[cfg(feature = "timestamps")]
             timestamp: None,
             time: None,
             message: None,
@@ -593,6 +614,7 @@ impl TestRerun {
     }
 
     /// Sets the start timestamp for this rerun.
+    #[cfg(feature = "timestamps")]
     pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
@@ -718,6 +740,7 @@ impl XmlString {
     /// Creates a new `XmlString`, removing any ANSI escapes and non-printable characters from it.
     pub fn new(data: impl AsRef<str>) -> Self {
         let data = data.as_ref();
+        #[cfg(feature = "strip-ansi")]
         let data = strip_ansi_escapes::strip_str(data);
         let data = data
             .replace(
