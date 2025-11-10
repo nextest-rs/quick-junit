@@ -23,6 +23,7 @@ The status (success, failure, error, or skipped) of a `TestCase` is represented 
 ## Features
 
 - ✅ Serializing JUnit/XUnit to the [Jenkins format](https://llg.cubic.org/docs/junit/).
+- ✅ Deserializing JUnit/XUnit XML back to Rust data structures
 - ✅ Including test reruns using `TestRerun`
 - ✅ Including flaky tests
 - ✅ Including standard output and error
@@ -31,8 +32,6 @@ The status (success, failure, error, or skipped) of a `TestCase` is represented 
     from the output
 - ✅ Automatically keeping track of success, failure and error counts
 - ✅ Arbitrary properties and extra attributes
-
-This crate does not currently support deserializing JUnit XML. (PRs are welcome!)
 
 ## Examples
 
@@ -63,6 +62,10 @@ assert_eq!(report.to_string().unwrap(), EXPECTED_XML);
 
 For a more comprehensive example, including reruns and flaky tests, see
 [`fixture_tests.rs`](https://github.com/nextest-rs/quick-junit/blob/main/tests/fixture_tests.rs).
+
+## Optional features
+
+- **proptest**: Generate `Arbitrary` instances for use with proptest. *Not enabled by default.*
 
 ## Minimum supported Rust version (MSRV)
 

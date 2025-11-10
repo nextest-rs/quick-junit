@@ -19,6 +19,7 @@
 //! # Features
 //!
 //! - ✅ Serializing JUnit/XUnit to the [Jenkins format](https://llg.cubic.org/docs/junit/).
+//! - ✅ Deserializing JUnit/XUnit XML back to Rust data structures
 //! - ✅ Including test reruns using [`TestRerun`]
 //! - ✅ Including flaky tests
 //! - ✅ Including standard output and error
@@ -27,8 +28,6 @@
 //!     from the output
 //! - ✅ Automatically keeping track of success, failure and error counts
 //! - ✅ Arbitrary properties and extra attributes
-//!
-//! This crate does not currently support deserializing JUnit XML. (PRs are welcome!)
 //!
 //! # Examples
 //!
@@ -60,6 +59,10 @@
 //! For a more comprehensive example, including reruns and flaky tests, see
 //! [`fixture_tests.rs`](https://github.com/nextest-rs/quick-junit/blob/main/tests/fixture_tests.rs).
 //!
+//! # Optional features
+//!
+//! - **proptest**: Generate `Arbitrary` instances for use with proptest. *Not enabled by default.*
+//!
 //! # Minimum supported Rust version (MSRV)
 //!
 //! The minimum supported Rust version is **Rust 1.70.** At any time, Rust versions from at least
@@ -73,9 +76,13 @@
 //! - [**junit-report**](https://crates.io/crates/junit-report): Older, more mature project. Doesn't
 //!   appear to support flaky tests or arbitrary properties as of version 0.8.3.
 
+mod deserialize;
 mod errors;
 mod report;
 mod serialize;
+
+#[cfg(any(test, feature = "proptest"))]
+mod proptest_impls;
 
 pub use errors::*;
 pub use report::*;
