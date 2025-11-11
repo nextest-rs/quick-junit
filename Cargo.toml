@@ -26,7 +26,7 @@ strip-ansi-escapes = "0.2.1"
 test-strategy = { version = "0.4.3", optional = true }
 thiserror = "2.0.17"
 uuid = "1.17.0"
-xxhash-rust = { version = "0.8.13", features = ["xxh3"], optional = true }
+xxhash-rust = { version = "0.8.15", features = ["xxh3"], optional = true }
 
 [dev-dependencies]
 goldenfile = "1.7.3"
