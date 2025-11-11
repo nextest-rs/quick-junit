@@ -11,7 +11,7 @@
             <failure message="testcase1-message">this is the failure description</failure>
             <system-err>some sort of failure output</system-err>
         </testcase>
-        <testcase name="testcase2" time="0.000">
+        <testcase name="testcase2" time="421.580">
             <error type="error type">testcase2 error description</error>
         </testcase>
         <testcase name="testcase3" assertions="20" timestamp="2021-04-01T11:52:41.000-07:00">
