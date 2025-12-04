@@ -29,7 +29,7 @@ uuid = "1.17.0"
 xxhash-rust = { version = "0.8.15", features = ["xxh3"], optional = true }
 
 [dev-dependencies]
-goldenfile = "1.7.3"
+goldenfile = "1.9.1"
 newtype-uuid = { version = "1.2.4", features = ["proptest1"] }
 owo-colors = "4.1.0"
 pretty_assertions = "1.4.1"
