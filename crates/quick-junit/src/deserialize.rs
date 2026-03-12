@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    DeserializeError, DeserializeErrorKind, NonSuccessKind, PathElement, Property, Report,
-    ReportUuid, TestCase, TestCaseStatus, TestRerun, TestSuite, XmlString,
+    DeserializeError, DeserializeErrorKind, FlakyOrRerun, NonSuccessKind, NonSuccessReruns,
+    PathElement, Property, Report, ReportUuid, TestCase, TestCaseStatus, TestRerun, TestSuite,
+    XmlString,
 };
 use chrono::{DateTime, FixedOffset};
 use indexmap::IndexMap;
@@ -1059,11 +1060,23 @@ fn build_test_case_status(
     // Build the status.
     if let Some(main) = main_status {
         match main.kind {
-            MainStatusKind::Skipped => Ok(TestCaseStatus::Skipped {
-                message: main.data.message.clone(),
-                ty: main.data.ty.clone(),
-                description: main.data.description.clone(),
-            }),
+            MainStatusKind::Skipped => {
+                if !flaky_runs.is_empty() || !reruns.is_empty() {
+                    return Err(DeserializeError::new(
+                        DeserializeErrorKind::InvalidStructure(
+                            "skipped test case cannot have flakyFailure, flakyError, \
+                             rerunFailure, or rerunError elements"
+                                .to_string(),
+                        ),
+                        path.to_vec(),
+                    ));
+                }
+                Ok(TestCaseStatus::Skipped {
+                    message: main.data.message.clone(),
+                    ty: main.data.ty.clone(),
+                    description: main.data.description.clone(),
+                })
+            }
             MainStatusKind::Failure | MainStatusKind::Error => {
                 let kind = if main.kind == MainStatusKind::Failure {
                     NonSuccessKind::Failure
@@ -1071,7 +1084,31 @@ fn build_test_case_status(
                     NonSuccessKind::Error
                 };
 
-                let reruns = reruns.into_iter().map(build_test_rerun).collect();
+                // Determine reruns kind from which elements were present.
+                let reruns = if !flaky_runs.is_empty() && !reruns.is_empty() {
+                    // Both flaky and rerun elements present: the data model
+                    // cannot faithfully represent this (NonSuccessReruns has a
+                    // single kind for all runs). Reject rather than silently
+                    // losing the distinction.
+                    return Err(DeserializeError::new(
+                        DeserializeErrorKind::InvalidStructure(
+                            "test case has both flakyFailure/flakyError and \
+                             rerunFailure/rerunError elements, which is invalid"
+                                .to_string(),
+                        ),
+                        path.to_vec(),
+                    ));
+                } else if !flaky_runs.is_empty() {
+                    NonSuccessReruns {
+                        kind: FlakyOrRerun::Flaky,
+                        runs: flaky_runs.into_iter().map(build_test_rerun).collect(),
+                    }
+                } else {
+                    NonSuccessReruns {
+                        kind: FlakyOrRerun::Rerun,
+                        runs: reruns.into_iter().map(build_test_rerun).collect(),
+                    }
+                };
 
                 Ok(TestCaseStatus::NonSuccess {
                     kind,
@@ -1089,7 +1126,11 @@ fn build_test_case_status(
         Ok(TestCaseStatus::Success { flaky_runs })
     } else {
         Err(DeserializeError::new(
-            DeserializeErrorKind::InvalidStructure("invalid status elements".to_string()),
+            DeserializeErrorKind::InvalidStructure(
+                "found rerunFailure/rerunError elements without a corresponding \
+                 failure or error element"
+                    .to_string(),
+            ),
             path.to_vec(),
         ))
     }

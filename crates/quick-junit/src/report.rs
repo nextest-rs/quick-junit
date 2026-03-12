@@ -456,8 +456,10 @@ pub enum TestCaseStatus {
         #[cfg_attr(feature = "proptest", strategy(option::of(text_node_strategy())))]
         description: Option<XmlString>,
 
-        /// Test reruns. These are represented as `rerunFailure` or `rerunError` in the JUnit XML.
-        reruns: Vec<TestRerun>,
+        /// Test reruns and how they are serialized.
+        ///
+        /// See [`NonSuccessReruns`] for details.
+        reruns: NonSuccessReruns,
     },
 
     /// This test case was not run.
@@ -489,7 +491,7 @@ impl TestCaseStatus {
             message: None,
             ty: None,
             description: None,
-            reruns: vec![],
+            reruns: NonSuccessReruns::default(),
         }
     }
 
@@ -536,26 +538,55 @@ impl TestCaseStatus {
     }
 
     /// Adds a rerun or flaky run. No-op if this test was skipped.
+    ///
+    /// For `Success`, reruns are always serialized as `<flakyFailure>`/`<flakyError>`.
+    /// For `NonSuccess`, the rerun is added to the existing [`NonSuccessReruns`] variant.
     pub fn add_rerun(&mut self, rerun: TestRerun) -> &mut Self {
         self.add_reruns(iter::once(rerun))
     }
 
     /// Adds reruns or flaky runs. No-op if this test was skipped.
-    pub fn add_reruns(&mut self, reruns: impl IntoIterator<Item = TestRerun>) -> &mut Self {
-        let reruns_mut = match self {
-            TestCaseStatus::Success { flaky_runs } => flaky_runs,
-            TestCaseStatus::NonSuccess { reruns, .. } => reruns,
-            TestCaseStatus::Skipped { .. } => return self,
-        };
-        reruns_mut.extend(reruns);
+    ///
+    /// For `Success`, reruns are always serialized as `<flakyFailure>`/`<flakyError>`.
+    /// For `NonSuccess`, reruns are added to the existing [`NonSuccessReruns`] variant.
+    pub fn add_reruns(&mut self, new_reruns: impl IntoIterator<Item = TestRerun>) -> &mut Self {
+        match self {
+            TestCaseStatus::Success { flaky_runs } => {
+                flaky_runs.extend(new_reruns);
+            }
+            TestCaseStatus::NonSuccess { reruns, .. } => {
+                reruns.runs.extend(new_reruns);
+            }
+            TestCaseStatus::Skipped { .. } => {}
+        }
+        self
+    }
+
+    /// Sets the rerun kind for `NonSuccess` statuses.
+    ///
+    /// This controls how reruns are serialized in JUnit XML. Use
+    /// [`FlakyOrRerun::Flaky`] for `<flakyFailure>`/`<flakyError>` (the test exhibited
+    /// flakiness), or [`FlakyOrRerun::Rerun`] for `<rerunFailure>`/`<rerunError>` (the
+    /// default).
+    ///
+    /// This is a no-op for `Success` (in which case reruns are always
+    /// serialized as flaky) and `Skipped` (no reruns).
+    pub fn set_rerun_kind(&mut self, kind: FlakyOrRerun) -> &mut Self {
+        if let TestCaseStatus::NonSuccess { reruns, .. } = self {
+            reruns.kind = kind;
+        }
         self
     }
 }
 
 /// A rerun of a test.
 ///
-/// This is serialized as `flakyFailure` or `flakyError` for successes, and as `rerunFailure` or
-/// `rerunError` for failures/errors.
+/// The XML element name depends on context:
+///
+/// - For [`TestCaseStatus::Success`], reruns are always serialized as `<flakyFailure>` or
+///   `<flakyError>`.
+/// - For [`TestCaseStatus::NonSuccess`], the element name is controlled by
+///   [`NonSuccessReruns::kind`].
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "proptest", derive(test_strategy::Arbitrary))]
 pub struct TestRerun {
@@ -690,6 +721,56 @@ pub enum NonSuccessKind {
     /// This is an unexpected error. Serialized as `error`, `flakyError` or `rerunError` depending
     /// on the context.
     Error,
+}
+
+/// Reruns for a [`TestCaseStatus::NonSuccess`] test case.
+///
+/// This type bundles the list of reruns together with how they should be serialized
+/// (`<flakyFailure>`/`<flakyError>` vs `<rerunFailure>`/`<rerunError>`).
+///
+/// For [`TestCaseStatus::Success`], reruns are always serialized as `<flakyFailure>` or
+/// `<flakyError>` and are stored directly in the `flaky_runs` field.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct NonSuccessReruns {
+    /// How reruns are serialized in JUnit XML.
+    ///
+    /// The default is [`FlakyOrRerun::Rerun`] (`<rerunFailure>`/`<rerunError>`).
+    /// Set to [`FlakyOrRerun::Flaky`] for `<flakyFailure>`/`<flakyError>`.
+    ///
+    /// When `runs` is empty, no XML elements are emitted regardless of this value, so the
+    /// `kind` is unobservable and will not be preserved through a serialization roundtrip.
+    pub kind: FlakyOrRerun,
+
+    /// The list of reruns.
+    pub runs: Vec<TestRerun>,
+}
+
+impl Default for NonSuccessReruns {
+    fn default() -> Self {
+        Self {
+            kind: FlakyOrRerun::Rerun,
+            runs: vec![],
+        }
+    }
+}
+
+/// Controls how reruns in [`TestCaseStatus::NonSuccess`] are represented in JUnit XML.
+///
+/// [`TestCaseStatus::Success`] does not use this type; its reruns are always serialized as
+/// `<flakyFailure>` or `<flakyError>`.
+///
+/// See [`NonSuccessReruns`] for the bundled representation and
+/// [`TestCaseStatus::set_rerun_kind`] for setting the kind.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "proptest", derive(test_strategy::Arbitrary))]
+pub enum FlakyOrRerun {
+    /// Reruns represent flaky behavior: the test eventually passed, but these runs failed.
+    /// Serialized as `<flakyFailure>` or `<flakyError>`.
+    Flaky,
+
+    /// Reruns represent retries: the test was retried but ultimately still failed.
+    /// Serialized as `<rerunFailure>` or `<rerunError>`.
+    Rerun,
 }
 
 /// Custom properties set during test execution, e.g. environment variables.
