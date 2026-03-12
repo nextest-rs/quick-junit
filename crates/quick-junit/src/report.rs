@@ -1,7 +1,7 @@
 // Copyright (c) The nextest Contributors
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[cfg(any(test, feature = "proptest"))]
+#[cfg(feature = "proptest")]
 use crate::proptest_impls::{
     datetime_strategy, duration_strategy, test_name_strategy, text_node_strategy,
     xml_attr_index_map_strategy,
@@ -10,7 +10,7 @@ use crate::{serialize::serialize_report, SerializeError};
 use chrono::{DateTime, FixedOffset};
 use indexmap::map::IndexMap;
 use newtype_uuid::{GenericUuid, TypedUuid, TypedUuidKind, TypedUuidTag};
-#[cfg(any(test, feature = "proptest"))]
+#[cfg(feature = "proptest")]
 use proptest::{collection, option, prelude::*};
 use std::{borrow::Borrow, hash::Hash, io, iter, ops::Deref, time::Duration};
 use uuid::Uuid;
@@ -299,11 +299,11 @@ impl TestSuite {
 
 /// Represents a single test case.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(any(test, feature = "proptest"), derive(test_strategy::Arbitrary))]
+#[cfg_attr(feature = "proptest", derive(test_strategy::Arbitrary))]
 #[non_exhaustive]
 pub struct TestCase {
     /// The name of the test case.
-    #[cfg_attr(any(test, feature = "proptest"), strategy(test_name_strategy()))]
+    #[cfg_attr(feature = "proptest", strategy(test_name_strategy()))]
     pub name: XmlString,
 
     /// The "classname" of the test case.
@@ -318,17 +318,11 @@ pub struct TestCase {
     /// The time at which this test case began execution.
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
-    #[cfg_attr(
-        any(test, feature = "proptest"),
-        strategy(option::of(datetime_strategy()))
-    )]
+    #[cfg_attr(feature = "proptest", strategy(option::of(datetime_strategy())))]
     pub timestamp: Option<DateTime<FixedOffset>>,
 
     /// The time it took to execute this test case.
-    #[cfg_attr(
-        any(test, feature = "proptest"),
-        strategy(option::of(duration_strategy()))
-    )]
+    #[cfg_attr(feature = "proptest", strategy(option::of(duration_strategy())))]
     pub time: Option<Duration>,
 
     /// The status of this test.
@@ -341,14 +335,11 @@ pub struct TestCase {
     pub system_err: Option<XmlString>,
 
     /// Other fields that may be set as attributes, such as "classname".
-    #[cfg_attr(
-        any(test, feature = "proptest"),
-        strategy(xml_attr_index_map_strategy())
-    )]
+    #[cfg_attr(feature = "proptest", strategy(xml_attr_index_map_strategy()))]
     pub extra: IndexMap<XmlString, XmlString>,
 
     /// Custom properties set during test execution, e.g. steps.
-    #[cfg_attr(any(test, feature = "proptest"), strategy(collection::vec(any::<Property>(), 0..3)))]
+    #[cfg_attr(feature = "proptest", strategy(collection::vec(any::<Property>(), 0..3)))]
     pub properties: Vec<Property>,
 }
 
@@ -439,7 +430,7 @@ impl TestCase {
 
 /// Represents the success or failure of a test case.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(any(test, feature = "proptest"), derive(test_strategy::Arbitrary))]
+#[cfg_attr(feature = "proptest", derive(test_strategy::Arbitrary))]
 pub enum TestCaseStatus {
     /// This test case passed.
     Success {
@@ -462,10 +453,7 @@ pub enum TestCaseStatus {
         /// The description of the failure.
         ///
         /// This is serialized and deserialized from the text node of the element.
-        #[cfg_attr(
-            any(test, feature = "proptest"),
-            strategy(option::of(text_node_strategy()))
-        )]
+        #[cfg_attr(feature = "proptest", strategy(option::of(text_node_strategy())))]
         description: Option<XmlString>,
 
         /// Test reruns. These are represented as `rerunFailure` or `rerunError` in the JUnit XML.
@@ -483,10 +471,7 @@ pub enum TestCaseStatus {
         /// The description of the skip.
         ///
         /// This is serialized and deserialized from the text node of the element.
-        #[cfg_attr(
-            any(test, feature = "proptest"),
-            strategy(option::of(text_node_strategy()))
-        )]
+        #[cfg_attr(feature = "proptest", strategy(option::of(text_node_strategy())))]
         description: Option<XmlString>,
     },
 }
@@ -572,7 +557,7 @@ impl TestCaseStatus {
 /// This is serialized as `flakyFailure` or `flakyError` for successes, and as `rerunFailure` or
 /// `rerunError` for failures/errors.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(any(test, feature = "proptest"), derive(test_strategy::Arbitrary))]
+#[cfg_attr(feature = "proptest", derive(test_strategy::Arbitrary))]
 pub struct TestRerun {
     /// The failure kind: error or failure.
     pub kind: NonSuccessKind,
@@ -580,19 +565,13 @@ pub struct TestRerun {
     /// The time at which this rerun began execution.
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
-    #[cfg_attr(
-        any(test, feature = "proptest"),
-        strategy(option::of(datetime_strategy()))
-    )]
+    #[cfg_attr(feature = "proptest", strategy(option::of(datetime_strategy())))]
     pub timestamp: Option<DateTime<FixedOffset>>,
 
     /// The time it took to execute this rerun.
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
-    #[cfg_attr(
-        any(test, feature = "proptest"),
-        strategy(option::of(duration_strategy()))
-    )]
+    #[cfg_attr(feature = "proptest", strategy(option::of(duration_strategy())))]
     pub time: Option<Duration>,
 
     /// The failure message.
@@ -613,10 +592,7 @@ pub struct TestRerun {
     /// The description of the failure.
     ///
     /// This is serialized and deserialized from the text node of the element.
-    #[cfg_attr(
-        any(test, feature = "proptest"),
-        strategy(option::of(text_node_strategy()))
-    )]
+    #[cfg_attr(feature = "proptest", strategy(option::of(text_node_strategy())))]
     pub description: Option<XmlString>,
 }
 
@@ -705,7 +681,7 @@ impl TestRerun {
 /// an unexpected failure might be something like an external service being down or a failure to
 /// execute the binary.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-#[cfg_attr(any(test, feature = "proptest"), derive(test_strategy::Arbitrary))]
+#[cfg_attr(feature = "proptest", derive(test_strategy::Arbitrary))]
 pub enum NonSuccessKind {
     /// This is an expected failure. Serialized as `failure`, `flakyFailure` or `rerunFailure`
     /// depending on the context.
@@ -718,7 +694,7 @@ pub enum NonSuccessKind {
 
 /// Custom properties set during test execution, e.g. environment variables.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(any(test, feature = "proptest"), derive(test_strategy::Arbitrary))]
+#[cfg_attr(feature = "proptest", derive(test_strategy::Arbitrary))]
 pub struct Property {
     /// The name of the property.
     pub name: XmlString,

@@ -1,0 +1,15 @@
+[package]
+name = "quick-junit-tests"
+version = "0.1.0"
+publish = false
+edition.workspace = true
+license.workspace = true
+
+[dev-dependencies]
+chrono.workspace = true
+goldenfile.workspace = true
+owo-colors.workspace = true
+pretty_assertions.workspace = true
+proptest.workspace = true
+quick-junit = { workspace = true, features = ["proptest"] }
+test-strategy.workspace = true

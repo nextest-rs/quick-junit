@@ -301,11 +301,8 @@ name = "quick-junit"
 version = "0.5.2"
 dependencies = [
  "chrono",
- "goldenfile",
  "indexmap",
  "newtype-uuid",
- "owo-colors",
- "pretty_assertions",
  "proptest",
  "quick-xml",
  "strip-ansi-escapes",
@@ -313,6 +310,19 @@ dependencies = [
  "thiserror",
  "uuid",
  "xxhash-rust",
+]
+
+[[package]]
+name = "quick-junit-tests"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "goldenfile",
+ "owo-colors",
+ "pretty_assertions",
+ "proptest",
+ "quick-junit",
+ "test-strategy",
 ]
 
 [[package]]

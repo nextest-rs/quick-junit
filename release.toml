@@ -7,3 +7,4 @@ tag-prefix = "{{crate_name}}-"
 tag-name = "{{prefix}}{{version}}"
 publish = false
 dependent-version = "upgrade"
+pre-release-hook = ["just", "generate-readmes"]

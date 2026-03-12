@@ -9,7 +9,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-quick-junit = { path = "..", features = ["proptest"] }
+quick-junit = { path = "../crates/quick-junit", features = ["proptest"] }
 
 # Prevent this from interfering with workspaces
 [workspace]

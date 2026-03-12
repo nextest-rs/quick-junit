@@ -1,8 +1,6 @@
 // Copyright (c) The nextest Contributors
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![cfg(feature = "proptest")]
-
 //! Property-based roundtrip tests for quick-junit serialization and deserialization.
 //!
 //! These tests verify that:

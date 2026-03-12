@@ -1,5 +1,8 @@
 set positional-arguments
 
+# Nightly toolchain used for cargo-sync-rdme.
+nightly_toolchain := "nightly-2025-08-31"
+
 # Note: help messages should be 1 line long as required by just.
 
 # Print a help message.
@@ -9,6 +12,10 @@ help:
 # Run `cargo hack --feature-powerset` on crates
 powerset *args:
     NEXTEST_NO_TESTS=pass cargo hack --feature-powerset --workspace "$@"
+
+# Generate README.md files using `cargo-sync-rdme`.
+generate-readmes:
+    cargo sync-rdme --toolchain {{nightly_toolchain}} -p quick-junit
 
 # Build docs for crates and direct dependencies
 rustdoc *args:
