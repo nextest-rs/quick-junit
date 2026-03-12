@@ -16,7 +16,7 @@ owo-colors = "4.1.0"
 pretty_assertions = "1.4.1"
 proptest = "1.7.0"
 quick-junit = { path = "crates/quick-junit" }
-quick-xml = "0.38.4"
+quick-xml = "0.39.2"
 strip-ansi-escapes = "0.2.1"
 test-strategy = "0.4.3"
 thiserror = "2.0.17"
