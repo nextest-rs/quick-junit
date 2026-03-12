@@ -5,7 +5,7 @@
 ![License: Apache-2.0 OR MIT](https://img.shields.io/crates/l/quick-junit.svg?)
 [![crates.io](https://img.shields.io/crates/v/quick-junit.svg?logo=rust)](https://crates.io/crates/quick-junit)
 [![docs.rs](https://img.shields.io/docsrs/quick-junit.svg?logo=docs.rs)](https://docs.rs/quick-junit)
-[![Rust: ^1.70.0](https://img.shields.io/badge/rust-^1.70.0-93450a.svg?logo=rust)](https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field)
+[![Rust: ^1.79.0](https://img.shields.io/badge/rust-^1.79.0-93450a.svg?logo=rust)](https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field)
 <!-- cargo-sync-rdme ]] -->
 <!-- cargo-sync-rdme rustdoc [[ -->
 `quick-junit` is a JUnit/XUnit XML data model and serializer for Rust. This crate allows users
@@ -70,7 +70,7 @@ For a more comprehensive example, including reruns and flaky tests, see
 
 ## Minimum supported Rust version (MSRV)
 
-The minimum supported Rust version is **Rust 1.70.** At any time, Rust versions from at least
+The minimum supported Rust version is **Rust 1.79.** At any time, Rust versions from at least
 the last 6 months will be supported.
 
 While this crate is a pre-release (0.x.x) it may have its MSRV bumped in a patch release. Once a
