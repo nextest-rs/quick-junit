@@ -57,7 +57,7 @@
 //! ```
 //!
 //! For a more comprehensive example, including reruns and flaky tests, see
-//! [`fixture_tests.rs`](https://github.com/nextest-rs/quick-junit/blob/main/tests/fixture_tests.rs).
+//! [`fixture_tests.rs`](https://github.com/nextest-rs/quick-junit/blob/main/crates/quick-junit-tests/tests/integration/fixture_tests.rs).
 //!
 //! # Optional features
 //!
@@ -81,7 +81,7 @@ mod errors;
 mod report;
 mod serialize;
 
-#[cfg(any(test, feature = "proptest"))]
+#[cfg(feature = "proptest")]
 mod proptest_impls;
 
 pub use errors::*;

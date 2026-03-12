@@ -254,7 +254,7 @@ fn deserialize_report<R: BufRead>(reader: &mut Reader<R>) -> Result<Report, Dese
     })
 }
 
-/// Deserializes a TestSuite from XML (for <testsuite> start tag).
+/// Deserializes a TestSuite from XML (for `<testsuite>` start tag).
 fn deserialize_test_suite<R: BufRead>(
     reader: &mut Reader<R>,
     start_element: &BytesStart<'_>,
@@ -413,7 +413,7 @@ fn deserialize_test_suite<R: BufRead>(
     })
 }
 
-/// Deserializes an empty TestSuite from XML (for <testsuite/> empty tag).
+/// Deserializes an empty TestSuite from XML (for `<testsuite/>` empty tag).
 fn deserialize_test_suite_empty(
     element: &BytesStart<'_>,
     path: &[PathElement],
@@ -500,7 +500,7 @@ fn deserialize_test_suite_empty(
     })
 }
 
-/// Deserializes a TestCase from XML (for <testcase> start tag).
+/// Deserializes a TestCase from XML (for `<testcase>` start tag).
 fn deserialize_test_case<R: BufRead>(
     reader: &mut Reader<R>,
     start_element: &BytesStart<'_>,
@@ -671,7 +671,7 @@ fn deserialize_test_case<R: BufRead>(
     })
 }
 
-/// Deserializes an empty TestCase from XML (for <testcase/> empty tag).
+/// Deserializes an empty TestCase from XML (for `<testcase/>` empty tag).
 fn deserialize_test_case_empty(
     element: &BytesStart<'_>,
     path: &[PathElement],
