@@ -5,7 +5,7 @@ resolver = "2"
 [workspace.package]
 edition = "2021"
 license = "Apache-2.0 OR MIT"
-rust-version = "1.70"
+rust-version = "1.79"
 
 [workspace.dependencies]
 chrono = { version = "0.4.42", default-features = false, features = ["std"] }
