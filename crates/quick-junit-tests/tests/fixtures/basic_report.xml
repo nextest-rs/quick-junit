@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="my-test-run" tests="7" failures="2" errors="1" timestamp="2021-04-01T10:52:37.000-08:00" time="42.235">
-    <testsuite name="testsuite0" tests="7" disabled="1" errors="1" failures="2" timestamp="2021-04-01T10:52:39.000-08:00">
+<testsuites name="my-test-run" tests="8" failures="3" errors="1" timestamp="2021-04-01T10:52:37.000-08:00" time="42.235">
+    <testsuite name="testsuite0" tests="8" disabled="1" errors="1" failures="3" timestamp="2021-04-01T10:52:39.000-08:00">
         <properties>
             <property name="env" value="FOOBAR"/>
         </properties>
@@ -40,6 +40,13 @@
             <properties>
                 <property name="step" value="foobar"/>
             </properties>
+        </testcase>
+        <testcase name="testcase7" time="0.500">
+            <failure message="test passed on attempt 4/4 but is configured to fail when flaky" type="flaky failure"/>
+            <flakyFailure type="prior flaky failure type">prior flaky failure description</flakyFailure>
+            <flakyError type="prior flaky error type">
+                <system-out>prior flaky error output</system-out>
+            </flakyError>
         </testcase>
     </testsuite>
 </testsuites>

@@ -134,8 +134,8 @@ fn test_stack_trace_with_whitespace() {
         reruns,
     } = &test_case.status
     {
-        assert_eq!(reruns.len(), 1, "Should have one rerun");
-        let stack_trace = reruns[0].stack_trace.as_ref().unwrap().as_str();
+        assert_eq!(reruns.runs.len(), 1, "Should have one rerun");
+        let stack_trace = reruns.runs[0].stack_trace.as_ref().unwrap().as_str();
         assert_eq!(stack_trace, "at line 1\n                    at line 2");
     } else {
         panic!("Expected NonSuccess status");

@@ -6,7 +6,7 @@ use goldenfile::Mint;
 use owo_colors::OwoColorize;
 use pretty_assertions::assert_eq;
 use quick_junit::{
-    NonSuccessKind, Property, Report, TestCase, TestCaseStatus, TestRerun, TestSuite,
+    FlakyOrRerun, NonSuccessKind, Property, Report, TestCase, TestCaseStatus, TestRerun, TestSuite,
 };
 use std::time::Duration;
 
@@ -134,6 +134,32 @@ fn basic_report() -> Report {
     let test_case_status = TestCaseStatus::success();
     let mut test_case = TestCase::new("testcase6", test_case_status);
     test_case.add_property(Property::new("step", "foobar"));
+    test_suite.add_test_case(test_case);
+
+    // ---
+    // testcase7: NonSuccess with flaky reruns (failure + flakyFailure combination).
+    // This models a test that is flaky (eventually passed) but configured to fail when flaky.
+
+    let mut test_case_status = TestCaseStatus::non_success(NonSuccessKind::Failure);
+    test_case_status
+        .set_type("flaky failure")
+        .set_message("test passed on attempt 4/4 but is configured to fail when flaky")
+        .set_rerun_kind(FlakyOrRerun::Flaky);
+
+    let mut flaky_rerun = TestRerun::new(NonSuccessKind::Failure);
+    flaky_rerun
+        .set_type("prior flaky failure type")
+        .set_description("prior flaky failure description");
+    test_case_status.add_rerun(flaky_rerun);
+
+    let mut flaky_rerun = TestRerun::new(NonSuccessKind::Error);
+    flaky_rerun
+        .set_type("prior flaky error type")
+        .set_system_out("prior flaky error output");
+    test_case_status.add_rerun(flaky_rerun);
+
+    let mut test_case = TestCase::new("testcase7", test_case_status);
+    test_case.set_time(Duration::from_millis(500));
     test_suite.add_test_case(test_case);
 
     test_suite.add_property(Property::new("env", "FOOBAR"));

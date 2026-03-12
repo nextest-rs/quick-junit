@@ -4,8 +4,8 @@
 //! Serialize a `Report`.
 
 use crate::{
-    NonSuccessKind, Property, Report, SerializeError, TestCase, TestCaseStatus, TestRerun,
-    TestSuite, XmlString,
+    FlakyOrRerun, NonSuccessKind, Property, Report, SerializeError, TestCase, TestCaseStatus,
+    TestRerun, TestSuite, XmlString,
 };
 use chrono::{DateTime, FixedOffset};
 use quick_xml::{
@@ -234,8 +234,8 @@ fn serialize_test_case(
                 tag_name,
                 writer,
             )?;
-            for rerun in reruns {
-                serialize_rerun(rerun, FlakyOrRerun::Rerun, writer)?;
+            for rerun in &reruns.runs {
+                serialize_rerun(rerun, reruns.kind, writer)?;
             }
         }
         TestCaseStatus::Skipped {
@@ -292,12 +292,6 @@ fn serialize_status(
     }
 
     Ok(())
-}
-
-#[derive(Copy, Clone, Debug)]
-enum FlakyOrRerun {
-    Flaky,
-    Rerun,
 }
 
 fn serialize_rerun(

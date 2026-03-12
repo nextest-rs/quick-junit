@@ -6,7 +6,8 @@
 //! These implementations enable property-based testing of serialization and deserialization.
 
 use crate::{
-    NonSuccessKind, Property, Report, ReportUuid, TestCase, TestCaseStatus, TestSuite, XmlString,
+    FlakyOrRerun, NonSuccessKind, NonSuccessReruns, Property, Report, ReportUuid, TestCase,
+    TestCaseStatus, TestRerun, TestSuite, XmlString,
 };
 use chrono::{DateTime, FixedOffset};
 use proptest::{
@@ -75,6 +76,29 @@ pub(crate) fn xml_attr_index_map_strategy(
 ) -> impl Strategy<Value = indexmap::IndexMap<XmlString, XmlString>> {
     collection::hash_map(xml_attr_name_strategy(), any::<XmlString>(), 0..3)
         .prop_map(|hm| hm.into_iter().collect())
+}
+
+impl Arbitrary for NonSuccessReruns {
+    type Parameters = ();
+    type Strategy = BoxedStrategy<Self>;
+
+    fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
+        (
+            any::<FlakyOrRerun>(),
+            collection::vec(any::<TestRerun>(), 0..5),
+        )
+            .prop_map(|(kind, runs)| {
+                // Normalize: empty runs always use Rerun, since the kind is
+                // unobservable in serialized XML when there are no elements.
+                let kind = if runs.is_empty() {
+                    FlakyOrRerun::Rerun
+                } else {
+                    kind
+                };
+                NonSuccessReruns { kind, runs }
+            })
+            .boxed()
+    }
 }
 
 impl Arbitrary for TestSuite {
