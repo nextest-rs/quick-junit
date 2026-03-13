@@ -72,153 +72,25 @@ fn deserialize_report<R: BufRead>(reader: &mut Reader<R>) -> Result<Report, Dese
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(e)) if e.name().as_ref() == b"testsuites" => {
-                let mut name = None;
-                let mut uuid = None;
-                let mut timestamp = None;
-                let mut time = None;
-                let mut tests = 0;
-                let mut failures = 0;
-                let mut errors = 0;
-
-                for attr in e.attributes() {
-                    let attr = attr.map_err(|e| {
-                        DeserializeError::new(DeserializeErrorKind::AttrError(e), root_path.clone())
-                    })?;
-                    let mut attr_path = root_path.clone();
-                    match attr.key.as_ref() {
-                        b"name" => {
-                            attr_path.push(PathElement::Attribute("name".to_string()));
-                            name = Some(parse_xml_string(&attr.value, &attr_path)?);
-                        }
-                        b"uuid" => {
-                            attr_path.push(PathElement::Attribute("uuid".to_string()));
-                            uuid = Some(parse_uuid(&attr.value, &attr_path)?);
-                        }
-                        b"timestamp" => {
-                            attr_path.push(PathElement::Attribute("timestamp".to_string()));
-                            timestamp = Some(parse_timestamp(&attr.value, &attr_path)?);
-                        }
-                        b"time" => {
-                            attr_path.push(PathElement::Attribute("time".to_string()));
-                            time = Some(parse_duration(&attr.value, &attr_path)?);
-                        }
-                        b"tests" => {
-                            attr_path.push(PathElement::Attribute("tests".to_string()));
-                            tests = parse_usize(&attr.value, &attr_path)?;
-                        }
-                        b"failures" => {
-                            attr_path.push(PathElement::Attribute("failures".to_string()));
-                            failures = parse_usize(&attr.value, &attr_path)?;
-                        }
-                        b"errors" => {
-                            attr_path.push(PathElement::Attribute("errors".to_string()));
-                            errors = parse_usize(&attr.value, &attr_path)?;
-                        }
-                        _ => {} // Ignore unknown attributes
-                    }
-                }
-
-                let name = name.ok_or_else(|| {
-                    let mut attr_path = root_path.clone();
-                    attr_path.push(PathElement::Attribute("name".to_string()));
-                    DeserializeError::new(
-                        DeserializeErrorKind::MissingAttribute("name".to_string()),
-                        attr_path,
-                    )
-                })?;
-
-                let test_suites = Vec::new();
-
-                report = Some(Report {
-                    name,
-                    uuid,
-                    timestamp,
-                    time,
-                    tests,
-                    failures,
-                    errors,
-                    test_suites,
-                });
+                report = Some(parse_testsuites_element(&e, &root_path)?);
             }
             Ok(Event::Empty(e)) if e.name().as_ref() == b"testsuites" => {
-                let mut name = None;
-                let mut uuid = None;
-                let mut timestamp = None;
-                let mut time = None;
-                let mut tests = 0;
-                let mut failures = 0;
-                let mut errors = 0;
-
-                for attr in e.attributes() {
-                    let attr = attr.map_err(|e| {
-                        DeserializeError::new(DeserializeErrorKind::AttrError(e), root_path.clone())
-                    })?;
-                    let mut attr_path = root_path.clone();
-                    match attr.key.as_ref() {
-                        b"name" => {
-                            attr_path.push(PathElement::Attribute("name".to_string()));
-                            name = Some(parse_xml_string(&attr.value, &attr_path)?);
-                        }
-                        b"uuid" => {
-                            attr_path.push(PathElement::Attribute("uuid".to_string()));
-                            uuid = Some(parse_uuid(&attr.value, &attr_path)?);
-                        }
-                        b"timestamp" => {
-                            attr_path.push(PathElement::Attribute("timestamp".to_string()));
-                            timestamp = Some(parse_timestamp(&attr.value, &attr_path)?);
-                        }
-                        b"time" => {
-                            attr_path.push(PathElement::Attribute("time".to_string()));
-                            time = Some(parse_duration(&attr.value, &attr_path)?);
-                        }
-                        b"tests" => {
-                            attr_path.push(PathElement::Attribute("tests".to_string()));
-                            tests = parse_usize(&attr.value, &attr_path)?;
-                        }
-                        b"failures" => {
-                            attr_path.push(PathElement::Attribute("failures".to_string()));
-                            failures = parse_usize(&attr.value, &attr_path)?;
-                        }
-                        b"errors" => {
-                            attr_path.push(PathElement::Attribute("errors".to_string()));
-                            errors = parse_usize(&attr.value, &attr_path)?;
-                        }
-                        _ => {} // Ignore unknown attributes
-                    }
-                }
-
-                let name = name.ok_or_else(|| {
-                    let mut attr_path = root_path.clone();
-                    attr_path.push(PathElement::Attribute("name".to_string()));
-                    DeserializeError::new(
-                        DeserializeErrorKind::MissingAttribute("name".to_string()),
-                        attr_path,
-                    )
-                })?;
-
-                report = Some(Report {
-                    name,
-                    uuid,
-                    timestamp,
-                    time,
-                    tests,
-                    failures,
-                    errors,
-                    test_suites: Vec::new(),
-                });
+                report = Some(parse_testsuites_element(&e, &root_path)?);
                 properly_closed = true; // Empty elements are self-closing
             }
             Ok(Event::Start(e)) if e.name().as_ref() == b"testsuite" => {
                 if let Some(ref mut report) = report {
                     let suite_index = report.test_suites.len();
-                    let test_suite = deserialize_test_suite(reader, &e, &root_path, suite_index)?;
+                    let test_suite =
+                        deserialize_test_suite(reader, &e, false, &root_path, suite_index)?;
                     report.test_suites.push(test_suite);
                 }
             }
             Ok(Event::Empty(e)) if e.name().as_ref() == b"testsuite" => {
                 if let Some(ref mut report) = report {
                     let suite_index = report.test_suites.len();
-                    let test_suite = deserialize_test_suite_empty(&e, &root_path, suite_index)?;
+                    let test_suite =
+                        deserialize_test_suite(reader, &e, true, &root_path, suite_index)?;
                     report.test_suites.push(test_suite);
                 }
             }
@@ -255,10 +127,80 @@ fn deserialize_report<R: BufRead>(reader: &mut Reader<R>) -> Result<Report, Dese
     })
 }
 
-/// Deserializes a TestSuite from XML (for `<testsuite>` start tag).
+/// Parses the attributes of a `<testsuites>` element into a `Report`
+/// (with an empty `test_suites` vec).
+fn parse_testsuites_element(
+    element: &BytesStart<'_>,
+    path: &[PathElement],
+) -> Result<Report, DeserializeError> {
+    let mut name = None;
+    let mut uuid = None;
+    let mut timestamp = None;
+    let mut time = None;
+    let mut tests = 0;
+    let mut failures = 0;
+    let mut errors = 0;
+
+    for attr in element.attributes() {
+        let attr = attr.map_err(|e| {
+            DeserializeError::new(DeserializeErrorKind::AttrError(e), path.to_vec())
+        })?;
+        let mut attr_path = path.to_vec();
+        match attr.key.as_ref() {
+            b"name" => {
+                attr_path.push(PathElement::Attribute("name".to_string()));
+                name = Some(parse_xml_string(&attr.value, &attr_path)?);
+            }
+            b"uuid" => {
+                attr_path.push(PathElement::Attribute("uuid".to_string()));
+                uuid = Some(parse_uuid(&attr.value, &attr_path)?);
+            }
+            b"timestamp" => {
+                attr_path.push(PathElement::Attribute("timestamp".to_string()));
+                timestamp = Some(parse_timestamp(&attr.value, &attr_path)?);
+            }
+            b"time" => {
+                attr_path.push(PathElement::Attribute("time".to_string()));
+                time = Some(parse_duration(&attr.value, &attr_path)?);
+            }
+            b"tests" => {
+                attr_path.push(PathElement::Attribute("tests".to_string()));
+                tests = parse_usize(&attr.value, &attr_path)?;
+            }
+            b"failures" => {
+                attr_path.push(PathElement::Attribute("failures".to_string()));
+                failures = parse_usize(&attr.value, &attr_path)?;
+            }
+            b"errors" => {
+                attr_path.push(PathElement::Attribute("errors".to_string()));
+                errors = parse_usize(&attr.value, &attr_path)?;
+            }
+            _ => {} // Ignore unknown attributes.
+        }
+    }
+
+    let name = require_attribute(name, "name", path)?;
+
+    Ok(Report {
+        name,
+        uuid,
+        timestamp,
+        time,
+        tests,
+        failures,
+        errors,
+        test_suites: Vec::new(),
+    })
+}
+
+/// Deserializes a TestSuite from XML.
+///
+/// Handles both `<testsuite>` start tags (with child elements) and
+/// `<testsuite/>` self-closing tags.
 fn deserialize_test_suite<R: BufRead>(
     reader: &mut Reader<R>,
-    start_element: &BytesStart<'_>,
+    element: &BytesStart<'_>,
+    is_empty: bool,
     path: &[PathElement],
     suite_index: usize,
 ) -> Result<TestSuite, DeserializeError> {
@@ -271,15 +213,15 @@ fn deserialize_test_suite<R: BufRead>(
     let mut time = None;
     let mut extra = IndexMap::new();
 
-    // First pass: extract name and other attributes
-    for attr in start_element.attributes() {
+    // Build element path (before name is known) for error reporting.
+    let mut element_path = path.to_vec();
+    element_path.push(PathElement::TestSuite(suite_index, None));
+
+    for attr in element.attributes() {
         let attr = attr.map_err(|e| {
-            let mut suite_path = path.to_vec();
-            suite_path.push(PathElement::TestSuite(suite_index, None));
-            DeserializeError::new(DeserializeErrorKind::AttrError(e), suite_path)
+            DeserializeError::new(DeserializeErrorKind::AttrError(e), element_path.clone())
         })?;
-        let mut attr_path = path.to_vec();
-        attr_path.push(PathElement::TestSuite(suite_index, None));
+        let mut attr_path = element_path.clone();
         match attr.key.as_ref() {
             b"name" => {
                 attr_path.push(PathElement::Attribute("name".to_string()));
@@ -310,7 +252,7 @@ fn deserialize_test_suite<R: BufRead>(
                 time = Some(parse_duration(&attr.value, &attr_path)?);
             }
             _ => {
-                // Store unknown attributes in extra
+                // Store unknown attributes in extra.
                 let key = parse_xml_string(attr.key.as_ref(), &attr_path)?;
                 let value = parse_xml_string(&attr.value, &attr_path)?;
                 extra.insert(key, value);
@@ -318,21 +260,31 @@ fn deserialize_test_suite<R: BufRead>(
         }
     }
 
-    let name_value = name.clone().ok_or_else(|| {
-        let mut attr_path = path.to_vec();
-        attr_path.push(PathElement::TestSuite(suite_index, None));
-        attr_path.push(PathElement::Attribute("name".to_string()));
-        DeserializeError::new(
-            DeserializeErrorKind::MissingAttribute("name".to_string()),
-            attr_path,
-        )
-    })?;
+    let name = require_attribute(name, "name", &element_path)?;
 
-    // Build the test suite path with the name
+    // For self-closing tags, there are no children to parse.
+    if is_empty {
+        return Ok(TestSuite {
+            name,
+            tests,
+            disabled,
+            errors,
+            failures,
+            timestamp,
+            time,
+            test_cases: Vec::new(),
+            properties: Vec::new(),
+            system_out: None,
+            system_err: None,
+            extra,
+        });
+    }
+
+    // Build the suite path with the name for child element error reporting.
     let mut suite_path = path.to_vec();
     suite_path.push(PathElement::TestSuite(
         suite_index,
-        Some(name_value.as_str().to_string()),
+        Some(name.as_str().to_string()),
     ));
 
     let mut test_cases = Vec::new();
@@ -347,7 +299,7 @@ fn deserialize_test_suite<R: BufRead>(
                 let element_name = e.name().as_ref().to_vec();
                 if &element_name == b"testcase" {
                     let test_case =
-                        deserialize_test_case(reader, e, &suite_path, test_cases.len())?;
+                        deserialize_test_case(reader, e, false, &suite_path, test_cases.len())?;
                     test_cases.push(test_case);
                 } else if &element_name == b"properties" {
                     properties = deserialize_properties(reader, &suite_path)?;
@@ -374,7 +326,8 @@ fn deserialize_test_suite<R: BufRead>(
             }
             Ok(Event::Empty(ref e)) => {
                 if e.name().as_ref() == b"testcase" {
-                    let test_case = deserialize_test_case_empty(e, &suite_path, test_cases.len())?;
+                    let test_case =
+                        deserialize_test_case(reader, e, true, &suite_path, test_cases.len())?;
                     test_cases.push(test_case);
                 }
             }
@@ -399,7 +352,7 @@ fn deserialize_test_suite<R: BufRead>(
     }
 
     Ok(TestSuite {
-        name: name_value,
+        name,
         tests,
         disabled,
         errors,
@@ -414,97 +367,14 @@ fn deserialize_test_suite<R: BufRead>(
     })
 }
 
-/// Deserializes an empty TestSuite from XML (for `<testsuite/>` empty tag).
-fn deserialize_test_suite_empty(
-    element: &BytesStart<'_>,
-    path: &[PathElement],
-    suite_index: usize,
-) -> Result<TestSuite, DeserializeError> {
-    let mut name = None;
-    let mut tests = 0;
-    let mut disabled = 0;
-    let mut errors = 0;
-    let mut failures = 0;
-    let mut timestamp = None;
-    let mut time = None;
-    let mut extra = IndexMap::new();
-
-    // First pass: extract name and other attributes
-    for attr in element.attributes() {
-        let attr = attr.map_err(|e| {
-            let mut suite_path = path.to_vec();
-            suite_path.push(PathElement::TestSuite(suite_index, None));
-            DeserializeError::new(DeserializeErrorKind::AttrError(e), suite_path)
-        })?;
-        let mut attr_path = path.to_vec();
-        attr_path.push(PathElement::TestSuite(suite_index, None));
-        match attr.key.as_ref() {
-            b"name" => {
-                attr_path.push(PathElement::Attribute("name".to_string()));
-                name = Some(parse_xml_string(&attr.value, &attr_path)?);
-            }
-            b"tests" => {
-                attr_path.push(PathElement::Attribute("tests".to_string()));
-                tests = parse_usize(&attr.value, &attr_path)?;
-            }
-            b"disabled" => {
-                attr_path.push(PathElement::Attribute("disabled".to_string()));
-                disabled = parse_usize(&attr.value, &attr_path)?;
-            }
-            b"errors" => {
-                attr_path.push(PathElement::Attribute("errors".to_string()));
-                errors = parse_usize(&attr.value, &attr_path)?;
-            }
-            b"failures" => {
-                attr_path.push(PathElement::Attribute("failures".to_string()));
-                failures = parse_usize(&attr.value, &attr_path)?;
-            }
-            b"timestamp" => {
-                attr_path.push(PathElement::Attribute("timestamp".to_string()));
-                timestamp = Some(parse_timestamp(&attr.value, &attr_path)?);
-            }
-            b"time" => {
-                attr_path.push(PathElement::Attribute("time".to_string()));
-                time = Some(parse_duration(&attr.value, &attr_path)?);
-            }
-            _ => {
-                let key = parse_xml_string(attr.key.as_ref(), &attr_path)?;
-                let value = parse_xml_string(&attr.value, &attr_path)?;
-                extra.insert(key, value);
-            }
-        }
-    }
-
-    let name = name.ok_or_else(|| {
-        let mut attr_path = path.to_vec();
-        attr_path.push(PathElement::TestSuite(suite_index, None));
-        attr_path.push(PathElement::Attribute("name".to_string()));
-        DeserializeError::new(
-            DeserializeErrorKind::MissingAttribute("name".to_string()),
-            attr_path,
-        )
-    })?;
-
-    Ok(TestSuite {
-        name,
-        tests,
-        disabled,
-        errors,
-        failures,
-        timestamp,
-        time,
-        test_cases: Vec::new(),
-        properties: Vec::new(),
-        system_out: None,
-        system_err: None,
-        extra,
-    })
-}
-
-/// Deserializes a TestCase from XML (for `<testcase>` start tag).
+/// Deserializes a TestCase from XML.
+///
+/// Handles both `<testcase>` start tags (with child elements) and
+/// `<testcase/>` self-closing tags.
 fn deserialize_test_case<R: BufRead>(
     reader: &mut Reader<R>,
-    start_element: &BytesStart<'_>,
+    element: &BytesStart<'_>,
+    is_empty: bool,
     path: &[PathElement],
     case_index: usize,
 ) -> Result<TestCase, DeserializeError> {
@@ -515,15 +385,15 @@ fn deserialize_test_case<R: BufRead>(
     let mut time = None;
     let mut extra = IndexMap::new();
 
-    // First pass: extract name and other attributes
-    for attr in start_element.attributes() {
+    // Build element path (before name is known) for error reporting.
+    let mut element_path = path.to_vec();
+    element_path.push(PathElement::TestCase(case_index, None));
+
+    for attr in element.attributes() {
         let attr = attr.map_err(|e| {
-            let mut case_path = path.to_vec();
-            case_path.push(PathElement::TestCase(case_index, None));
-            DeserializeError::new(DeserializeErrorKind::AttrError(e), case_path)
+            DeserializeError::new(DeserializeErrorKind::AttrError(e), element_path.clone())
         })?;
-        let mut attr_path = path.to_vec();
-        attr_path.push(PathElement::TestCase(case_index, None));
+        let mut attr_path = element_path.clone();
         match attr.key.as_ref() {
             b"name" => {
                 attr_path.push(PathElement::Attribute("name".to_string()));
@@ -553,21 +423,29 @@ fn deserialize_test_case<R: BufRead>(
         }
     }
 
-    let name_value = name.clone().ok_or_else(|| {
-        let mut attr_path = path.to_vec();
-        attr_path.push(PathElement::TestCase(case_index, None));
-        attr_path.push(PathElement::Attribute("name".to_string()));
-        DeserializeError::new(
-            DeserializeErrorKind::MissingAttribute("name".to_string()),
-            attr_path,
-        )
-    })?;
+    let name = require_attribute(name, "name", &element_path)?;
 
-    // Build the test case path with the name
+    // For self-closing tags, there are no children to parse.
+    if is_empty {
+        return Ok(TestCase {
+            name,
+            classname,
+            assertions,
+            timestamp,
+            time,
+            status: TestCaseStatus::success(),
+            system_out: None,
+            system_err: None,
+            extra,
+            properties: Vec::new(),
+        });
+    }
+
+    // Build the test case path with the name for child element error reporting.
     let mut case_path = path.to_vec();
     case_path.push(PathElement::TestCase(
         case_index,
-        Some(name_value.as_str().to_string()),
+        Some(name.as_str().to_string()),
     ));
 
     let mut properties = Vec::new();
@@ -580,18 +458,8 @@ fn deserialize_test_case<R: BufRead>(
         match reader.read_event_into(&mut buf) {
             Ok(Event::Start(ref e)) => {
                 let element_name = e.name().as_ref().to_vec();
-                let is_status_element = matches!(
-                    element_name.as_slice(),
-                    b"failure"
-                        | b"error"
-                        | b"skipped"
-                        | b"flakyFailure"
-                        | b"flakyError"
-                        | b"rerunFailure"
-                        | b"rerunError"
-                );
 
-                if is_status_element {
+                if is_status_element(&element_name) {
                     let status_element = deserialize_status_element(reader, e, false, &case_path)?;
                     status_elements.push(status_element);
                 } else if &element_name == b"properties" {
@@ -605,7 +473,7 @@ fn deserialize_test_case<R: BufRead>(
                     child_path.push(PathElement::SystemErr);
                     system_err = Some(read_text_content(reader, b"system-err", &child_path)?);
                 } else {
-                    // Skip unknown Start elements
+                    // Skip unknown elements.
                     let tag_name = e.name().to_owned();
                     reader
                         .read_to_end_into(tag_name, &mut Vec::new())
@@ -619,22 +487,13 @@ fn deserialize_test_case<R: BufRead>(
             }
             Ok(Event::Empty(ref e)) => {
                 let element_name = e.name().as_ref().to_vec();
-                let is_status_element = matches!(
-                    element_name.as_slice(),
-                    b"failure"
-                        | b"error"
-                        | b"skipped"
-                        | b"flakyFailure"
-                        | b"flakyError"
-                        | b"rerunFailure"
-                        | b"rerunError"
-                );
 
-                if is_status_element {
+                if is_status_element(&element_name) {
                     let status_element = deserialize_status_element(reader, e, true, &case_path)?;
                     status_elements.push(status_element);
                 }
-                // Empty elements don't need special handling for properties, system-out, system-err
+                // Empty elements don't need special handling for properties,
+                // system-out, or system-err.
             }
             Ok(Event::End(ref e)) if e.name().as_ref() == b"testcase" => break,
             Ok(Event::Eof) => {
@@ -659,7 +518,7 @@ fn deserialize_test_case<R: BufRead>(
     let status = build_test_case_status(status_elements, &case_path)?;
 
     Ok(TestCase {
-        name: name_value,
+        name,
         classname,
         assertions,
         timestamp,
@@ -669,80 +528,6 @@ fn deserialize_test_case<R: BufRead>(
         system_err,
         extra,
         properties,
-    })
-}
-
-/// Deserializes an empty TestCase from XML (for `<testcase/>` empty tag).
-fn deserialize_test_case_empty(
-    element: &BytesStart<'_>,
-    path: &[PathElement],
-    case_index: usize,
-) -> Result<TestCase, DeserializeError> {
-    let mut name = None;
-    let mut classname = None;
-    let mut assertions = None;
-    let mut timestamp = None;
-    let mut time = None;
-    let mut extra = IndexMap::new();
-
-    for attr in element.attributes() {
-        let attr = attr.map_err(|e| {
-            let mut case_path = path.to_vec();
-            case_path.push(PathElement::TestCase(case_index, None));
-            DeserializeError::new(DeserializeErrorKind::AttrError(e), case_path)
-        })?;
-        let mut attr_path = path.to_vec();
-        attr_path.push(PathElement::TestCase(case_index, None));
-        match attr.key.as_ref() {
-            b"name" => {
-                attr_path.push(PathElement::Attribute("name".to_string()));
-                name = Some(parse_xml_string(&attr.value, &attr_path)?);
-            }
-            b"classname" => {
-                attr_path.push(PathElement::Attribute("classname".to_string()));
-                classname = Some(parse_xml_string(&attr.value, &attr_path)?);
-            }
-            b"assertions" => {
-                attr_path.push(PathElement::Attribute("assertions".to_string()));
-                assertions = Some(parse_usize(&attr.value, &attr_path)?);
-            }
-            b"timestamp" => {
-                attr_path.push(PathElement::Attribute("timestamp".to_string()));
-                timestamp = Some(parse_timestamp(&attr.value, &attr_path)?);
-            }
-            b"time" => {
-                attr_path.push(PathElement::Attribute("time".to_string()));
-                time = Some(parse_duration(&attr.value, &attr_path)?);
-            }
-            _ => {
-                let key = parse_xml_string(attr.key.as_ref(), &attr_path)?;
-                let value = parse_xml_string(&attr.value, &attr_path)?;
-                extra.insert(key, value);
-            }
-        }
-    }
-
-    let name_value = name.ok_or_else(|| {
-        let mut attr_path = path.to_vec();
-        attr_path.push(PathElement::TestCase(case_index, None));
-        attr_path.push(PathElement::Attribute("name".to_string()));
-        DeserializeError::new(
-            DeserializeErrorKind::MissingAttribute("name".to_string()),
-            attr_path,
-        )
-    })?;
-
-    Ok(TestCase {
-        name: name_value,
-        classname,
-        assertions,
-        timestamp,
-        time,
-        status: TestCaseStatus::success(),
-        system_out: None,
-        system_err: None,
-        extra,
-        properties: Vec::new(),
     })
 }
 
@@ -766,6 +551,19 @@ enum MainStatusKind {
     Failure,
     Error,
     Skipped,
+}
+
+impl MainStatusKind {
+    /// Converts to `NonSuccessKind`. Panics if called on `Skipped`.
+    fn to_non_success_kind(self) -> NonSuccessKind {
+        match self {
+            MainStatusKind::Failure => NonSuccessKind::Failure,
+            MainStatusKind::Error => NonSuccessKind::Error,
+            MainStatusKind::Skipped => {
+                panic!("to_non_success_kind called on Skipped")
+            }
+        }
+    }
 }
 
 /// Main status element
@@ -961,19 +759,8 @@ fn deserialize_status_element<R: BufRead>(
                     })?;
                     description_text.push_str(unescaped);
                 }
-                Ok(Event::End(ref e))
-                    if matches!(
-                        e.name().as_ref(),
-                        b"failure"
-                            | b"error"
-                            | b"skipped"
-                            | b"flakyFailure"
-                            | b"flakyError"
-                            | b"rerunFailure"
-                            | b"rerunError"
-                    ) =>
-                {
-                    break
+                Ok(Event::End(ref e)) if is_status_element(e.name().as_ref()) => {
+                    break;
                 }
                 Ok(Event::Eof) => {
                     return Err(DeserializeError::new(
@@ -1111,13 +898,16 @@ fn build_test_case_status(
             description: main.data.description.clone(),
         }),
 
-        // Failure/error + flaky runs: the test was flaky but is reported as a
-        // failure (e.g. "fail when flaky" mode).
-        (Some((main, MainStatusKind::Failure | MainStatusKind::Error)), true, false) => {
-            let kind = match main.kind {
-                MainStatusKind::Failure => NonSuccessKind::Failure,
-                MainStatusKind::Error => NonSuccessKind::Error,
-                MainStatusKind::Skipped => unreachable!("matched Failure|Error"),
+        // Failure/error: build NonSuccess status. If flaky runs are present,
+        // they become the reruns (FlakyOrRerun::Flaky); otherwise any rerun
+        // elements are used (FlakyOrRerun::Rerun, possibly empty).
+        (Some((main, MainStatusKind::Failure | MainStatusKind::Error)), _, false)
+        | (Some((main, MainStatusKind::Failure | MainStatusKind::Error)), false, _) => {
+            let kind = main.kind.to_non_success_kind();
+            let (rerun_kind, runs) = if has_flaky {
+                (FlakyOrRerun::Flaky, flaky_runs)
+            } else {
+                (FlakyOrRerun::Rerun, reruns)
             };
             Ok(TestCaseStatus::NonSuccess {
                 kind,
@@ -1125,28 +915,8 @@ fn build_test_case_status(
                 ty: main.data.ty.clone(),
                 description: main.data.description.clone(),
                 reruns: NonSuccessReruns {
-                    kind: FlakyOrRerun::Flaky,
-                    runs: flaky_runs.into_iter().map(build_test_rerun).collect(),
-                },
-            })
-        }
-
-        // Failure/error + rerun elements (or no reruns at all): the standard
-        // non-success path.
-        (Some((main, MainStatusKind::Failure | MainStatusKind::Error)), false, _) => {
-            let kind = match main.kind {
-                MainStatusKind::Failure => NonSuccessKind::Failure,
-                MainStatusKind::Error => NonSuccessKind::Error,
-                MainStatusKind::Skipped => unreachable!("matched Failure|Error"),
-            };
-            Ok(TestCaseStatus::NonSuccess {
-                kind,
-                message: main.data.message.clone(),
-                ty: main.data.ty.clone(),
-                description: main.data.description.clone(),
-                reruns: NonSuccessReruns {
-                    kind: FlakyOrRerun::Rerun,
-                    runs: reruns.into_iter().map(build_test_rerun).collect(),
+                    kind: rerun_kind,
+                    runs: runs.into_iter().map(build_test_rerun).collect(),
                 },
             })
         }
@@ -1184,6 +954,20 @@ fn build_test_rerun(element: &RerunStatusElement) -> TestRerun {
         system_err: element.data.system_err.clone(),
         description: element.data.description.clone(),
     }
+}
+
+/// Returns true if the element name is a test case status element.
+fn is_status_element(name: &[u8]) -> bool {
+    matches!(
+        name,
+        b"failure"
+            | b"error"
+            | b"skipped"
+            | b"flakyFailure"
+            | b"flakyError"
+            | b"rerunFailure"
+            | b"rerunError"
+    )
 }
 
 /// Deserializes properties from XML.
@@ -1342,6 +1126,23 @@ fn read_text_content<R: BufRead>(
 // ---
 // Helper functions
 // ---
+
+/// Requires that an attribute was present, returning a `MissingAttribute`
+/// error if it was `None`.
+fn require_attribute<T>(
+    value: Option<T>,
+    attr_name: &str,
+    path: &[PathElement],
+) -> Result<T, DeserializeError> {
+    value.ok_or_else(|| {
+        let mut attr_path = path.to_vec();
+        attr_path.push(PathElement::Attribute(attr_name.to_string()));
+        DeserializeError::new(
+            DeserializeErrorKind::MissingAttribute(attr_name.to_string()),
+            attr_path,
+        )
+    })
+}
 
 fn parse_xml_string(bytes: &[u8], path: &[PathElement]) -> Result<XmlString, DeserializeError> {
     let s = std::str::from_utf8(bytes)
