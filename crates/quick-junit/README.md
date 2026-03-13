@@ -15,17 +15,17 @@ This crate is built to serve the needs of [cargo-nextest](https://nexte.st).
 
 ## Overview
 
-The root element of a JUnit report is a [`Report`](https://docs.rs/quick-junit/0.5.2/quick_junit/report/struct.Report.html). A [`Report`](https://docs.rs/quick-junit/0.5.2/quick_junit/report/struct.Report.html) consists of one or more
-[`TestSuite`](https://docs.rs/quick-junit/0.5.2/quick_junit/report/struct.TestSuite.html) instances. A [`TestSuite`](https://docs.rs/quick-junit/0.5.2/quick_junit/report/struct.TestSuite.html) instance consists of one or more [`TestCase`](https://docs.rs/quick-junit/0.5.2/quick_junit/report/struct.TestCase.html)s.
+The root element of a JUnit report is a [`Report`](https://docs.rs/quick-junit/0.6.0/quick_junit/report/struct.Report.html). A [`Report`](https://docs.rs/quick-junit/0.6.0/quick_junit/report/struct.Report.html) consists of one or more
+[`TestSuite`](https://docs.rs/quick-junit/0.6.0/quick_junit/report/struct.TestSuite.html) instances. A [`TestSuite`](https://docs.rs/quick-junit/0.6.0/quick_junit/report/struct.TestSuite.html) instance consists of one or more [`TestCase`](https://docs.rs/quick-junit/0.6.0/quick_junit/report/struct.TestCase.html)s.
 
-The status (success, failure, error, or skipped) of a [`TestCase`](https://docs.rs/quick-junit/0.5.2/quick_junit/report/struct.TestCase.html) is represented by
-[`TestCaseStatus`](https://docs.rs/quick-junit/0.5.2/quick_junit/report/enum.TestCaseStatus.html).
+The status (success, failure, error, or skipped) of a [`TestCase`](https://docs.rs/quick-junit/0.6.0/quick_junit/report/struct.TestCase.html) is represented by
+[`TestCaseStatus`](https://docs.rs/quick-junit/0.6.0/quick_junit/report/enum.TestCaseStatus.html).
 
 ## Features
 
 * ✅ Serializing JUnit/XUnit to the [Jenkins format](https://llg.cubic.org/docs/junit/).
 * ✅ Deserializing JUnit/XUnit XML back to Rust data structures
-* ✅ Including test reruns using [`TestRerun`](https://docs.rs/quick-junit/0.5.2/quick_junit/report/struct.TestRerun.html)
+* ✅ Including test reruns using [`TestRerun`](https://docs.rs/quick-junit/0.6.0/quick_junit/report/struct.TestRerun.html)
 * ✅ Including flaky tests
 * ✅ Including standard output and error
   * ✅ Filtering out [invalid XML
