@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.0] - 2026-03-13
+
+### Changed
+
+- `TestCaseStatus::NonSuccess`'s `reruns` field is now a `NonSuccessReruns` struct. `NonSuccessReruns` bundles the list of reruns with a `FlakyOrRerun` kind that controls whether they are serialized as `<flakyFailure>`/`<flakyError>` or `<rerunFailure>`/`<rerunError>`. This enables representing tests that both failed *and* exhibited flaky behavior, as permitted by the [JUnit XSD](https://llg.cubic.org/docs/junit/) and as supported by an upcoming version of cargo-nextest.
+- The deserializer now handles all valid combinations of main status and rerun/flaky elements, modeled as a decision table, and errors out on unrepresentable combinations such as both `flakyFailure` and `rerunFailure` being present.
+- MSRV updated to Rust 1.79.
+
 ## [0.5.2] - 2025-11-10
 
 ### Added
@@ -126,6 +134,7 @@ Internal dependency update: `quick-xml` updated to 0.37.1.
 
 - Initial version.
 
+[0.6.0]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.6.0
 [0.5.2]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.5.2
 [0.5.1]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.5.1
 [0.5.0]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.5.0
