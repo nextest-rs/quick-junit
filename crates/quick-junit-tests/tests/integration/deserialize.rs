@@ -1344,6 +1344,75 @@ fn test_mixed_flaky_and_rerun_elements() {
 }
 
 #[test]
+fn test_mixed_flaky_and_rerun_without_main_status() {
+    // Same as above, but without a main failure/error element. The rerun
+    // elements must not be silently dropped.
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="test" tests="1" failures="0" errors="0">
+    <testsuite name="suite" tests="1" disabled="0" errors="0" failures="0">
+        <testcase name="test">
+            <flakyFailure type="flaky"/>
+            <rerunFailure type="rerun"/>
+        </testcase>
+    </testsuite>
+</testsuites>"#;
+
+    assert_error(
+        xml,
+        |kind| matches!(kind, DeserializeErrorKind::InvalidStructure(_)),
+        &[
+            PathElement::TestSuites,
+            PathElement::TestSuite(0, Some("suite".to_string())),
+            PathElement::TestCase(0, Some("test".to_string())),
+        ],
+    );
+}
+
+#[test]
+fn test_rerun_without_main_status() {
+    // rerunFailure/rerunError elements require a corresponding failure or
+    // error element.
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="test" tests="1" failures="0" errors="0">
+    <testsuite name="suite" tests="1" disabled="0" errors="0" failures="0">
+        <testcase name="test">
+            <rerunFailure type="retry"/>
+        </testcase>
+    </testsuite>
+</testsuites>"#;
+
+    assert_error(
+        xml,
+        |kind| matches!(kind, DeserializeErrorKind::InvalidStructure(_)),
+        &[
+            PathElement::TestSuites,
+            PathElement::TestSuite(0, Some("suite".to_string())),
+            PathElement::TestCase(0, Some("test".to_string())),
+        ],
+    );
+
+    // Same with rerunError.
+    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="test" tests="1" failures="0" errors="0">
+    <testsuite name="suite" tests="1" disabled="0" errors="0" failures="0">
+        <testcase name="test">
+            <rerunError type="retry"/>
+        </testcase>
+    </testsuite>
+</testsuites>"#;
+
+    assert_error(
+        xml,
+        |kind| matches!(kind, DeserializeErrorKind::InvalidStructure(_)),
+        &[
+            PathElement::TestSuites,
+            PathElement::TestSuite(0, Some("suite".to_string())),
+            PathElement::TestCase(0, Some("test".to_string())),
+        ],
+    );
+}
+
+#[test]
 fn test_multiple_main_status_elements() {
     let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <testsuites name="test" tests="1" failures="2" errors="0">

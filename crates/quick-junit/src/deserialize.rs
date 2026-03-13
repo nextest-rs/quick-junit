@@ -1025,10 +1025,6 @@ fn build_test_case_status(
     status_elements: Vec<StatusElement>,
     path: &[PathElement],
 ) -> Result<TestCaseStatus, DeserializeError> {
-    if status_elements.is_empty() {
-        return Ok(TestCaseStatus::success());
-    }
-
     // Separate the main status from reruns and flaky runs.
     let mut main_status: Option<&MainStatusElement> = None;
     let mut flaky_runs = Vec::new();
@@ -1057,82 +1053,114 @@ fn build_test_case_status(
         }
     }
 
-    // Build the status.
-    if let Some(main) = main_status {
-        match main.kind {
-            MainStatusKind::Skipped => {
-                if !flaky_runs.is_empty() || !reruns.is_empty() {
-                    return Err(DeserializeError::new(
-                        DeserializeErrorKind::InvalidStructure(
-                            "skipped test case cannot have flakyFailure, flakyError, \
-                             rerunFailure, or rerunError elements"
-                                .to_string(),
-                        ),
-                        path.to_vec(),
-                    ));
-                }
-                Ok(TestCaseStatus::Skipped {
-                    message: main.data.message.clone(),
-                    ty: main.data.ty.clone(),
-                    description: main.data.description.clone(),
-                })
-            }
-            MainStatusKind::Failure | MainStatusKind::Error => {
-                let kind = if main.kind == MainStatusKind::Failure {
-                    NonSuccessKind::Failure
-                } else {
-                    NonSuccessKind::Error
-                };
+    // Build the status from the combination of main status, flaky runs, and
+    // reruns. Each arm corresponds to a row in the decision table:
+    //
+    // main_status  has_flaky  has_reruns   |         result
+    //
+    //    None        false      false      |   Success (empty)
+    //    None        true       false      |   Success (flaky_runs)
+    //    None        false      true       |   Error: reruns without main
+    //   Skipped      true         *        |   Error: skipped + reruns
+    //   Skipped        *        true       |   Error: skipped + reruns
+    //   Skipped      false      false      |   Skipped
+    //  Fail/Error    true       false      |   NonSuccess (flaky reruns)
+    //  Fail/Error    false        *        |   NonSuccess (rerun reruns)
+    //      *         true       true       |   Error: mixed flaky + rerun
 
-                // Determine reruns kind from which elements were present.
-                let reruns = if !flaky_runs.is_empty() && !reruns.is_empty() {
-                    // Both flaky and rerun elements present: the data model
-                    // cannot faithfully represent this (NonSuccessReruns has a
-                    // single kind for all runs). Reject rather than silently
-                    // losing the distinction.
-                    return Err(DeserializeError::new(
-                        DeserializeErrorKind::InvalidStructure(
-                            "test case has both flakyFailure/flakyError and \
-                             rerunFailure/rerunError elements, which is invalid"
-                                .to_string(),
-                        ),
-                        path.to_vec(),
-                    ));
-                } else if !flaky_runs.is_empty() {
-                    NonSuccessReruns {
-                        kind: FlakyOrRerun::Flaky,
-                        runs: flaky_runs.into_iter().map(build_test_rerun).collect(),
-                    }
-                } else {
-                    NonSuccessReruns {
-                        kind: FlakyOrRerun::Rerun,
-                        runs: reruns.into_iter().map(build_test_rerun).collect(),
-                    }
-                };
+    let main_with_kind = main_status.map(|m| (m, m.kind));
+    let has_flaky = !flaky_runs.is_empty();
+    let has_reruns = !reruns.is_empty();
 
-                Ok(TestCaseStatus::NonSuccess {
-                    kind,
-                    message: main.data.message.clone(),
-                    ty: main.data.ty.clone(),
-                    description: main.data.description.clone(),
-                    reruns,
-                })
-            }
+    match (main_with_kind, has_flaky, has_reruns) {
+        // No main status, no reruns/flaky: success.
+        (None, false, false) => Ok(TestCaseStatus::success()),
+
+        // No main status + flaky runs: success with prior flaky failures.
+        (None, true, false) => {
+            let flaky_runs = flaky_runs.into_iter().map(build_test_rerun).collect();
+            Ok(TestCaseStatus::Success { flaky_runs })
         }
-    } else if !flaky_runs.is_empty() {
-        // Success with flaky runs
-        let flaky_runs = flaky_runs.into_iter().map(build_test_rerun).collect();
 
-        Ok(TestCaseStatus::Success { flaky_runs })
-    } else {
-        Err(DeserializeError::new(
+        // No main status + rerun elements: invalid (reruns require a main
+        // failure/error).
+        (None, false, true) => Err(DeserializeError::new(
             DeserializeErrorKind::InvalidStructure(
                 "found rerunFailure/rerunError elements without a corresponding \
                  failure or error element"
                     .to_string(),
             ),
             path.to_vec(),
-        ))
+        )),
+
+        // Skipped + any reruns/flaky: invalid.
+        (Some((_, MainStatusKind::Skipped)), true, _)
+        | (Some((_, MainStatusKind::Skipped)), _, true) => Err(DeserializeError::new(
+            DeserializeErrorKind::InvalidStructure(
+                "skipped test case cannot have flakyFailure, flakyError, \
+                 rerunFailure, or rerunError elements"
+                    .to_string(),
+            ),
+            path.to_vec(),
+        )),
+
+        // Skipped with no reruns/flaky.
+        (Some((main, MainStatusKind::Skipped)), false, false) => Ok(TestCaseStatus::Skipped {
+            message: main.data.message.clone(),
+            ty: main.data.ty.clone(),
+            description: main.data.description.clone(),
+        }),
+
+        // Failure/error + flaky runs: the test was flaky but is reported as a
+        // failure (e.g. "fail when flaky" mode).
+        (Some((main, MainStatusKind::Failure | MainStatusKind::Error)), true, false) => {
+            let kind = match main.kind {
+                MainStatusKind::Failure => NonSuccessKind::Failure,
+                MainStatusKind::Error => NonSuccessKind::Error,
+                MainStatusKind::Skipped => unreachable!("matched Failure|Error"),
+            };
+            Ok(TestCaseStatus::NonSuccess {
+                kind,
+                message: main.data.message.clone(),
+                ty: main.data.ty.clone(),
+                description: main.data.description.clone(),
+                reruns: NonSuccessReruns {
+                    kind: FlakyOrRerun::Flaky,
+                    runs: flaky_runs.into_iter().map(build_test_rerun).collect(),
+                },
+            })
+        }
+
+        // Failure/error + rerun elements (or no reruns at all): the standard
+        // non-success path.
+        (Some((main, MainStatusKind::Failure | MainStatusKind::Error)), false, _) => {
+            let kind = match main.kind {
+                MainStatusKind::Failure => NonSuccessKind::Failure,
+                MainStatusKind::Error => NonSuccessKind::Error,
+                MainStatusKind::Skipped => unreachable!("matched Failure|Error"),
+            };
+            Ok(TestCaseStatus::NonSuccess {
+                kind,
+                message: main.data.message.clone(),
+                ty: main.data.ty.clone(),
+                description: main.data.description.clone(),
+                reruns: NonSuccessReruns {
+                    kind: FlakyOrRerun::Rerun,
+                    runs: reruns.into_iter().map(build_test_rerun).collect(),
+                },
+            })
+        }
+
+        // Mixed flaky + rerun elements: the data model uses a single
+        // FlakyOrRerun kind for all reruns, so this cannot be represented.
+        (_, true, true) => Err(DeserializeError::new(
+            DeserializeErrorKind::InvalidStructure(
+                "test case has both flakyFailure/flakyError and \
+                 rerunFailure/rerunError elements, which is not supported"
+                    .to_string(),
+            ),
+            path.to_vec(),
+        )),
     }
 }
 
