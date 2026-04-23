@@ -20,7 +20,7 @@ quick-xml = "0.38.4"
 strip-ansi-escapes = "0.2.1"
 test-strategy = "0.4.3"
 thiserror = "2.0.18"
-uuid = "1.17.0"
+uuid = "1.23.1"
 xxhash-rust = { version = "0.8.15", features = ["xxh3"] }
 
 [profile.dev.package.proptest]
