@@ -1,7 +1,7 @@
 set positional-arguments
 
 # Nightly toolchain used for cargo-sync-rdme.
-nightly_toolchain := "nightly-2025-08-31"
+nightly_toolchain := "nightly-2026-04-30"
 
 # Note: help messages should be 1 line long as required by just.
 
