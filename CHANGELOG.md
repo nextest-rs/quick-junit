@@ -1,5 +1,15 @@
 # Changelog
 
+<!-- next-header -->
+## Unreleased - ReleaseDate
+
+### Updated
+
+Internal dependency update: `quick-xml` updated to 0.41.0. This resolves the following deserialize-time denial of service issues:
+
+- [RUSTSEC-2026-0194](https://rustsec.org/advisories/RUSTSEC-2026-0194)
+- [RUSTSEC-2026-0195](https://rustsec.org/advisories/RUSTSEC-2026-0195)
+
 ## [0.6.0] - 2026-03-13
 
 ### Changed
@@ -134,6 +144,7 @@ Internal dependency update: `quick-xml` updated to 0.37.1.
 
 - Initial version.
 
+<!-- next-url -->
 [0.6.0]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.6.0
 [0.5.2]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.5.2
 [0.5.1]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.5.1
