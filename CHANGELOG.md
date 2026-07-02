@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+## [0.6.1] - 2026-07-02
+
 ### Updated
 
 Internal dependency update: `quick-xml` updated to 0.41.0. This resolves the following deserialize-time denial of service issues:
@@ -145,6 +147,7 @@ Internal dependency update: `quick-xml` updated to 0.37.1.
 - Initial version.
 
 <!-- next-url -->
+[0.6.1]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.6.1
 [0.6.0]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.6.0
 [0.5.2]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.5.2
 [0.5.1]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.5.1
