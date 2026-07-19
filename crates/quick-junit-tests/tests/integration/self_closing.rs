@@ -11,7 +11,8 @@ use quick_junit::{NonSuccessKind, Report, TestCase, TestCaseStatus, TestRerun, T
 fn childless_test_suite_serializes_self_closing() {
     let mut suite = TestSuite::new("empty-suite");
     suite.tests = 3;
-    suite.disabled = 1;
+    suite.skipped = 1;
+    suite.disabled = Some(2);
 
     let mut report = Report::new("run");
     report.add_test_suite(suite.clone());
@@ -20,9 +21,9 @@ fn childless_test_suite_serializes_self_closing() {
 
     assert!(
         xml.contains(
-            r#"<testsuite name="empty-suite" tests="3" disabled="1" errors="0" failures="0"/>"#
+            r#"<testsuite name="empty-suite" tests="3" skipped="1" errors="0" failures="0" disabled="2"/>"#
         ),
-        "expected self-closing testsuite, got:\n{xml}"
+        "expected self-closing testsuite with a disabled attribute, got:\n{xml}"
     );
     assert!(
         !xml.contains("</testsuite>"),

@@ -58,6 +58,24 @@ pub struct Report {
     /// The total number of errors from all TestSuites.
     pub errors: usize,
 
+    /// The total number of tests skipped at runtime across all TestSuites.
+    ///
+    /// This is an extension to the spec that's used by nextest.
+    pub skipped: usize,
+
+    /// The total number of tests disabled by design across all TestSuites.
+    ///
+    /// Unlike [`skipped`](Self::skipped), which counts tests skipped at runtime,
+    /// `disabled` counts tests disabled by design -- for example, googletest's
+    /// `DISABLED_` prefix. `None` means no child suite carried a `disabled`
+    /// count.
+    ///
+    /// [`Self::add_test_suite`] aggregates the `disabled` counts of suites
+    /// which carry that field, but `quick-junit` itself has no notion of
+    /// disabled tests. Suite-level `disabled` counts can be populated either by
+    /// the deserializer or through manual assignment.
+    pub disabled: Option<usize>,
+
     /// The test suites contained in this report.
     pub test_suites: Vec<TestSuite>,
 }
@@ -73,6 +91,8 @@ impl Report {
             tests: 0,
             failures: 0,
             errors: 0,
+            skipped: 0,
+            disabled: None,
             test_suites: vec![],
         }
     }
@@ -105,7 +125,12 @@ impl Report {
         self
     }
 
-    /// Adds a new TestSuite and updates the `tests`, `failures` and `errors` counts.
+    /// Adds a new TestSuite and updates the aggregate counts.
+    ///
+    /// This updates the `tests`, `skipped`, `failures`, and `errors` counts. If
+    /// the suite carries a `disabled` count, it is added into `disabled` as
+    /// well, initializing that field from `None` to `Some(0)` if necessary; a
+    /// suite with no `disabled` count leaves `disabled` untouched.
     ///
     /// When generating a new report, use of this method is recommended over adding to
     /// `self.TestSuites` directly.
@@ -113,11 +138,20 @@ impl Report {
         self.tests += test_suite.tests;
         self.failures += test_suite.failures;
         self.errors += test_suite.errors;
+        self.skipped += test_suite.skipped;
+        if let Some(disabled) = test_suite.disabled {
+            *self.disabled.get_or_insert(0) += disabled;
+        }
         self.test_suites.push(test_suite);
         self
     }
 
-    /// Adds several [`TestSuite`]s and updates the `tests`, `failures` and `errors` counts.
+    /// Adds several [`TestSuite`]s and updates the aggregate counts.
+    ///
+    /// This updates the `tests`, `skipped`, `failures`, and `errors` counts, and
+    /// the `disabled` count for any suites that carry one. See
+    /// [`add_test_suite`](Self::add_test_suite) for the details of `disabled`
+    /// aggregation.
     ///
     /// When generating a new report, use of this method is recommended over adding to
     /// `self.TestSuites` directly.
@@ -158,8 +192,19 @@ pub struct TestSuite {
     /// The total number of tests in this TestSuite.
     pub tests: usize,
 
-    /// The total number of disabled tests in this TestSuite.
-    pub disabled: usize,
+    /// The total number of tests skipped at runtime in this TestSuite.
+    pub skipped: usize,
+
+    /// The number of tests in this TestSuite disabled by design.
+    ///
+    /// Unlike [`skipped`](Self::skipped), which counts tests skipped at
+    /// runtime, `disabled` counts tests disabled by design -- for example,
+    /// googletest's `DISABLED_` prefix. `None` means the `<testsuite>` element
+    /// carried no `disabled` attribute.
+    ///
+    /// `quick-junit` itself has no notion of disabled tests. This field is
+    /// populated by the deserializer or set manually.
+    pub disabled: Option<usize>,
 
     /// The total number of tests in this suite that errored.
     ///
@@ -201,7 +246,8 @@ impl TestSuite {
             time: None,
             timestamp: None,
             tests: 0,
-            disabled: 0,
+            skipped: 0,
+            disabled: None,
             errors: 0,
             failures: 0,
             test_cases: vec![],
@@ -253,7 +299,7 @@ impl TestSuite {
                 NonSuccessKind::Failure => self.failures += 1,
                 NonSuccessKind::Error => self.errors += 1,
             },
-            TestCaseStatus::Skipped { .. } => self.disabled += 1,
+            TestCaseStatus::Skipped { .. } => self.skipped += 1,
         }
         self.test_cases.push(test_case);
         self
