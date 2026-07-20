@@ -30,6 +30,7 @@ pub type ReportUuid = TypedUuid<ReportKind>;
 
 /// The root element of a JUnit report.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Report {
     /// The name of this report.
     pub name: XmlString,
