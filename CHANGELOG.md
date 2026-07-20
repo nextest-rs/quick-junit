@@ -18,6 +18,7 @@ Skipped test counts are now reported via the `skipped` attribute rather than `di
 
 #### Other changes
 
+- `Report` is now `#[non_exhaustive]`, consistent with `TestSuite` and `TestCase`. Construct it via `Report::new` and then assign fields, so that future field additions are non-breaking.
 - Childless `<testsuite>` and `<testcase>` elements are now serialized as self-closing tags (for example, `<testcase name="my-test"/>` rather than `<testcase name="my-test"></testcase>`). The output is semantically identical XML, only more compact and idiomatic. The deserializer already accepted these self-closing forms, so serializing them means round-trip tests now cover those parse paths.
 
 ## [0.6.1] - 2026-07-02
