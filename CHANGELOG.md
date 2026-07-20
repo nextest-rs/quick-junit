@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+### Changed
+
+- Childless `<testsuite>` and `<testcase>` elements are now serialized as self-closing tags (for example, `<testcase name="my-test"/>` rather than `<testcase name="my-test"></testcase>`). The output is semantically identical XML, only more compact and idiomatic. The deserializer already accepted these self-closing forms, so serializing them means round-trip tests now cover those parse paths.
+
 ## [0.6.1] - 2026-07-02
 
 ### Updated
