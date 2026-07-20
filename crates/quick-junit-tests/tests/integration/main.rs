@@ -5,4 +5,5 @@ mod cdata;
 mod deserialize;
 mod fixture_tests;
 mod roundtrip;
+mod self_closing;
 mod whitespace;

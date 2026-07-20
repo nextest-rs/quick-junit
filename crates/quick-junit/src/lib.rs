@@ -44,8 +44,7 @@
 //! const EXPECTED_XML: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
 //! <testsuites name="my-test-run" tests="2" failures="1" errors="0">
 //!     <testsuite name="my-test-suite" tests="2" disabled="0" errors="0" failures="1">
-//!         <testcase name="success-case">
-//!         </testcase>
+//!         <testcase name="success-case"/>
 //!         <testcase name="failure-case">
 //!             <failure/>
 //!         </testcase>

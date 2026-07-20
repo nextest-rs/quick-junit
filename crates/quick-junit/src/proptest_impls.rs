@@ -101,6 +101,28 @@ impl Arbitrary for NonSuccessReruns {
     }
 }
 
+fn test_suite_children_strategy() -> impl Strategy<
+    Value = (
+        Vec<TestCase>,
+        Vec<Property>,
+        Option<XmlString>,
+        Option<XmlString>,
+    ),
+> {
+    prop_oneof![
+        // Weight the fully-childless case with some probability so that
+        // roundtrip proptests reliably exercise self-closing <testsuite/>
+        // serialization and its is_empty parse path.
+        1 => Just((Vec::new(), Vec::new(), None, None)),
+        7 => (
+            collection::vec(any::<TestCase>(), 0..10),
+            collection::vec(any::<Property>(), 0..5),
+            any::<Option<XmlString>>(),
+            any::<Option<XmlString>>(),
+        ),
+    ]
+}
+
 impl Arbitrary for TestSuite {
     type Parameters = ();
     type Strategy = BoxedStrategy<Self>;
@@ -110,14 +132,17 @@ impl Arbitrary for TestSuite {
             test_name_strategy(),
             option::of(datetime_strategy()),
             option::of(duration_strategy()),
-            collection::vec(any::<TestCase>(), 0..10),
-            collection::vec(any::<Property>(), 0..5),
-            any::<Option<XmlString>>(),
-            any::<Option<XmlString>>(),
+            test_suite_children_strategy(),
             collection::hash_map(xml_attr_name_strategy(), any::<XmlString>(), 0..5),
         )
             .prop_map(
-                |(name, timestamp, time, test_cases, properties, system_out, system_err, extra)| {
+                |(
+                    name,
+                    timestamp,
+                    time,
+                    (test_cases, properties, system_out, system_err),
+                    extra,
+                )| {
                     // Compute counts from test_cases
                     let tests = test_cases.len();
                     let mut failures = 0;

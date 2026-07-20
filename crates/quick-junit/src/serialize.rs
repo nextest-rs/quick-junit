@@ -129,6 +129,19 @@ pub(crate) fn serialize_test_suite(
         test_suite_tag.push_attribute((k.as_str(), v.as_str()));
     }
 
+    // A childless testsuite is treated as a self-closing tag.
+    //
+    // This check mirrors the event processing below -- it must stay in sync.
+    // (The roundtrip proptests are intended to catch regressions here.)
+    if properties.is_empty()
+        && test_cases.is_empty()
+        && system_out.is_none()
+        && system_err.is_none()
+    {
+        writer.write_event(Event::Empty(test_suite_tag))?;
+        return Ok(());
+    }
+
     writer.write_event(Event::Start(test_suite_tag))?;
 
     if !properties.is_empty() {
@@ -200,6 +213,22 @@ fn serialize_test_case(
     for (k, v) in extra {
         testcase_tag.push_attribute((k.as_str(), v.as_str()));
     }
+
+    // A childless testsuite is treated as a self-closing tag.
+    //
+    // This check mirrors the event processing below -- it must stay in sync.
+    // (The roundtrip proptests are intended to catch regressions here.)
+    let status_has_children = match status {
+        TestCaseStatus::Success { flaky_runs } => !flaky_runs.is_empty(),
+        TestCaseStatus::NonSuccess { .. } => true,
+        TestCaseStatus::Skipped { .. } => true,
+    };
+    if properties.is_empty() && system_out.is_none() && system_err.is_none() && !status_has_children
+    {
+        writer.write_event(Event::Empty(testcase_tag))?;
+        return Ok(());
+    }
+
     writer.write_event(Event::Start(testcase_tag))?;
 
     if !properties.is_empty() {

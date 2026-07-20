@@ -436,6 +436,10 @@ pub enum TestCaseStatus {
     Success {
         /// Prior runs of the test. These are represented as `flakyFailure` or `flakyError` in the
         /// JUnit XML.
+        #[cfg_attr(
+            feature = "proptest",
+            strategy(collection::vec(any::<TestRerun>(), 0..5))
+        )]
         flaky_runs: Vec<TestRerun>,
     },
 
