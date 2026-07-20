@@ -5,6 +5,19 @@
 
 ### Changed
 
+#### Skipped test counts
+
+Skipped test counts are now reported via the `skipped` attribute rather than `disabled`. For `<testsuite>`, `skipped` matches the [llg schema](https://llg.cubic.org/docs/junit/) and the Jenkins [junit-10 schema](https://github.com/jenkinsci/xunit-plugin/blob/master/src/main/resources/org/jenkinsci/plugins/xunit/types/model/xsd/junit-10.xsd), as well as pytest and Maven Surefire.
+
+- Each `<testsuite>` now emits `skipped="N"`, and the root `<testsuites>` element now emits an aggregated `skipped="N"` count. Previously the root didn't carry a skip count at all.
+- Root-level `skipped` is a quick-junit extension. It follows the modern JUnit convention (as documented, for example, by [testmoapp/junitxml](https://github.com/testmoapp/junitxml)) and is similar to quick-junit's existing extensions such as `uuid`.
+- `TestSuite`'s `disabled` field has been renamed to `skipped`.
+- `Report` gains new public `skipped` and `disabled` fields, and `Report::add_test_suite` now aggregates skip counts into `Report::skipped`.
+
+`disabled` is now modeled as a separate optional count on both `Report` and `TestSuite`, distinct from `skipped`. (`disabled` is intended to count tests that are disabled by design, such as googletest's `DISABLED_`-prefixed tests. Note, however, that quick-junit doesn't have a notion of disabled tests at the moment.)
+
+#### Other changes
+
 - Childless `<testsuite>` and `<testcase>` elements are now serialized as self-closing tags (for example, `<testcase name="my-test"/>` rather than `<testcase name="my-test"></testcase>`). The output is semantically identical XML, only more compact and idiomatic. The deserializer already accepted these self-closing forms, so serializing them means round-trip tests now cover those parse paths.
 
 ## [0.6.1] - 2026-07-02

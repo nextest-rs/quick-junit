@@ -58,6 +58,8 @@ pub(crate) fn serialize_report_impl(
         tests,
         failures,
         errors,
+        skipped,
+        disabled,
         test_suites,
     } = report;
 
@@ -65,9 +67,13 @@ pub(crate) fn serialize_report_impl(
     testsuites_tag.extend_attributes([
         ("name", name.as_str()),
         ("tests", tests.to_string().as_str()),
+        ("skipped", skipped.to_string().as_str()),
         ("failures", failures.to_string().as_str()),
         ("errors", errors.to_string().as_str()),
     ]);
+    if let Some(disabled) = disabled {
+        testsuites_tag.push_attribute(("disabled", disabled.to_string().as_str()));
+    }
     if let Some(uuid) = uuid {
         testsuites_tag.push_attribute(("uuid", uuid.to_string().as_str()));
     }
@@ -97,6 +103,7 @@ pub(crate) fn serialize_test_suite(
     let TestSuite {
         name,
         tests,
+        skipped,
         disabled,
         errors,
         failures,
@@ -113,10 +120,13 @@ pub(crate) fn serialize_test_suite(
     test_suite_tag.extend_attributes([
         ("name", name.as_str()),
         ("tests", tests.to_string().as_str()),
-        ("disabled", disabled.to_string().as_str()),
+        ("skipped", skipped.to_string().as_str()),
         ("errors", errors.to_string().as_str()),
         ("failures", failures.to_string().as_str()),
     ]);
+    if let Some(disabled) = disabled {
+        test_suite_tag.push_attribute(("disabled", disabled.to_string().as_str()));
+    }
 
     if let Some(timestamp) = timestamp {
         serialize_timestamp(&mut test_suite_tag, timestamp);

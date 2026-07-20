@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="my-test-run" tests="8" failures="3" errors="1" timestamp="2021-04-01T10:52:37.000-08:00" time="42.235">
-    <testsuite name="testsuite0" tests="8" disabled="1" errors="1" failures="3" timestamp="2021-04-01T10:52:39.000-08:00">
+<testsuites name="my-test-run" tests="8" skipped="1" failures="3" errors="1" timestamp="2021-04-01T10:52:37.000-08:00" time="42.235">
+    <testsuite name="testsuite0" tests="8" skipped="1" errors="1" failures="3" timestamp="2021-04-01T10:52:39.000-08:00">
         <properties>
             <property name="env" value="FOOBAR"/>
         </properties>

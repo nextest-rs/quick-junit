@@ -47,7 +47,7 @@ impl Report {
     ///
     /// let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
     /// <testsuites name="my-test-run" tests="1" failures="0" errors="0">
-    ///     <testsuite name="my-test-suite" tests="1" disabled="0" errors="0" failures="0">
+    ///     <testsuite name="my-test-suite" tests="1" skipped="0" errors="0" failures="0">
     ///         <testcase name="success-case"/>
     ///     </testsuite>
     /// </testsuites>
@@ -140,6 +140,8 @@ fn parse_testsuites_element(
     let mut tests = 0;
     let mut failures = 0;
     let mut errors = 0;
+    let mut skipped = 0;
+    let mut disabled: Option<usize> = None;
 
     for attr in element.attributes() {
         let attr = attr.map_err(|e| {
@@ -175,6 +177,14 @@ fn parse_testsuites_element(
                 attr_path.push(PathElement::Attribute("errors".to_string()));
                 errors = parse_usize(&attr.value, &attr_path)?;
             }
+            b"skipped" => {
+                attr_path.push(PathElement::Attribute("skipped".to_string()));
+                skipped = parse_usize(&attr.value, &attr_path)?;
+            }
+            b"disabled" => {
+                attr_path.push(PathElement::Attribute("disabled".to_string()));
+                disabled = Some(parse_usize(&attr.value, &attr_path)?);
+            }
             _ => {} // Ignore unknown attributes.
         }
     }
@@ -189,6 +199,8 @@ fn parse_testsuites_element(
         tests,
         failures,
         errors,
+        skipped,
+        disabled,
         test_suites: Vec::new(),
     })
 }
@@ -206,7 +218,8 @@ fn deserialize_test_suite<R: BufRead>(
 ) -> Result<TestSuite, DeserializeError> {
     let mut name = None;
     let mut tests = 0;
-    let mut disabled = 0;
+    let mut skipped = 0;
+    let mut disabled = None;
     let mut errors = 0;
     let mut failures = 0;
     let mut timestamp = None;
@@ -231,9 +244,13 @@ fn deserialize_test_suite<R: BufRead>(
                 attr_path.push(PathElement::Attribute("tests".to_string()));
                 tests = parse_usize(&attr.value, &attr_path)?;
             }
+            b"skipped" => {
+                attr_path.push(PathElement::Attribute("skipped".to_string()));
+                skipped = parse_usize(&attr.value, &attr_path)?;
+            }
             b"disabled" => {
                 attr_path.push(PathElement::Attribute("disabled".to_string()));
-                disabled = parse_usize(&attr.value, &attr_path)?;
+                disabled = Some(parse_usize(&attr.value, &attr_path)?);
             }
             b"errors" => {
                 attr_path.push(PathElement::Attribute("errors".to_string()));
@@ -267,6 +284,7 @@ fn deserialize_test_suite<R: BufRead>(
         return Ok(TestSuite {
             name,
             tests,
+            skipped,
             disabled,
             errors,
             failures,
@@ -354,6 +372,7 @@ fn deserialize_test_suite<R: BufRead>(
     Ok(TestSuite {
         name,
         tests,
+        skipped,
         disabled,
         errors,
         failures,

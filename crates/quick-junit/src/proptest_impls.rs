@@ -132,6 +132,7 @@ impl Arbitrary for TestSuite {
             test_name_strategy(),
             option::of(datetime_strategy()),
             option::of(duration_strategy()),
+            option::of(0..=1000usize),
             test_suite_children_strategy(),
             collection::hash_map(xml_attr_name_strategy(), any::<XmlString>(), 0..5),
         )
@@ -140,6 +141,7 @@ impl Arbitrary for TestSuite {
                     name,
                     timestamp,
                     time,
+                    disabled,
                     (test_cases, properties, system_out, system_err),
                     extra,
                 )| {
@@ -147,7 +149,7 @@ impl Arbitrary for TestSuite {
                     let tests = test_cases.len();
                     let mut failures = 0;
                     let mut errors = 0;
-                    let mut disabled = 0;
+                    let mut skipped = 0;
 
                     for test_case in &test_cases {
                         match &test_case.status {
@@ -156,13 +158,14 @@ impl Arbitrary for TestSuite {
                                 NonSuccessKind::Failure => failures += 1,
                                 NonSuccessKind::Error => errors += 1,
                             },
-                            TestCaseStatus::Skipped { .. } => disabled += 1,
+                            TestCaseStatus::Skipped { .. } => skipped += 1,
                         }
                     }
 
                     TestSuite {
                         name,
                         tests,
+                        skipped,
                         disabled,
                         errors,
                         failures,
@@ -197,6 +200,15 @@ impl Arbitrary for Report {
                 let tests = test_suites.iter().map(|ts| ts.tests).sum();
                 let failures = test_suites.iter().map(|ts| ts.failures).sum();
                 let errors = test_suites.iter().map(|ts| ts.errors).sum();
+                let skipped = test_suites.iter().map(|ts| ts.skipped).sum();
+
+                // Mirror add_test_suite disabled aggregation (None if all
+                // suites None, otherwise Some of sum of present values).
+                let disabled = if test_suites.iter().all(|ts| ts.disabled.is_none()) {
+                    None
+                } else {
+                    Some(test_suites.iter().filter_map(|ts| ts.disabled).sum())
+                };
 
                 Report {
                     name,
@@ -206,6 +218,8 @@ impl Arbitrary for Report {
                     tests,
                     failures,
                     errors,
+                    skipped,
+                    disabled,
                     test_suites,
                 }
             })

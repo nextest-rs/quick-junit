@@ -31,7 +31,7 @@ The status (success, failure, error, or skipped) of a [`TestCase`](https://docs.
   * ✅ Filtering out [invalid XML
     characters](https://en.wikipedia.org/wiki/Valid_characters_in_XML) (eg ANSI escape codes)
     from the output
-* ✅ Automatically keeping track of success, failure and error counts
+* ✅ Automatically keeping track of success, failure, error, and skipped counts
 * ✅ Arbitrary properties and extra attributes
 
 ## Examples
@@ -47,8 +47,8 @@ test_suite.add_test_cases([success_case, failure_case]);
 report.add_test_suite(test_suite);
 
 const EXPECTED_XML: &str = r#"<?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="my-test-run" tests="2" failures="1" errors="0">
-    <testsuite name="my-test-suite" tests="2" disabled="0" errors="0" failures="1">
+<testsuites name="my-test-run" tests="2" skipped="0" failures="1" errors="0">
+    <testsuite name="my-test-suite" tests="2" skipped="0" errors="0" failures="1">
         <testcase name="success-case"/>
         <testcase name="failure-case">
             <failure/>

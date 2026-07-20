@@ -182,6 +182,8 @@ fn serialize_roundtrip_examples() {
     // Verify top-level attributes.
     assert_eq!(deserialized_report.name, original_report.name);
     assert_eq!(deserialized_report.tests, original_report.tests);
+    assert_eq!(deserialized_report.skipped, original_report.skipped);
+    assert_eq!(deserialized_report.disabled, original_report.disabled);
     assert_eq!(deserialized_report.failures, original_report.failures);
     assert_eq!(deserialized_report.errors, original_report.errors);
     assert_eq!(deserialized_report.timestamp, original_report.timestamp);
