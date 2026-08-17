@@ -15,17 +15,17 @@ This crate is built to serve the needs of [cargo-nextest](https://nexte.st).
 
 ## Overview
 
-The root element of a JUnit report is a [`Report`](https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.Report.html). A [`Report`](https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.Report.html) consists of one or more
-[`TestSuite`](https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestSuite.html) instances. A [`TestSuite`](https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestSuite.html) instance consists of one or more [`TestCase`](https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestCase.html)s.
+The root element of a JUnit report is a [`Report`]. A [`Report`] consists of one or more
+[`TestSuite`] instances. A [`TestSuite`] instance consists of one or more [`TestCase`]s.
 
-The status (success, failure, error, or skipped) of a [`TestCase`](https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestCase.html) is represented by
-[`TestCaseStatus`](https://docs.rs/quick-junit/0.7.0/quick_junit/report/enum.TestCaseStatus.html).
+The status (success, failure, error, or skipped) of a [`TestCase`] is represented by
+[`TestCaseStatus`].
 
 ## Features
 
 * ✅ Serializing JUnit/XUnit to the [Jenkins format](https://llg.cubic.org/docs/junit/).
 * ✅ Deserializing JUnit/XUnit XML back to Rust data structures
-* ✅ Including test reruns using [`TestRerun`](https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestRerun.html)
+* ✅ Including test reruns using [`TestRerun`]
 * ✅ Including flaky tests
 * ✅ Including standard output and error
   * ✅ Filtering out [invalid XML
@@ -79,6 +79,12 @@ crate has reached 1.x, any MSRV bump will be accompanied with a new minor versio
 
 * [**junit-report**](https://crates.io/crates/junit-report): Older, more mature project. Doesn’t
   appear to support flaky tests or arbitrary properties as of version 0.8.3.
+
+[`Report`]: https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.Report.html "struct quick_junit::report::Report"
+[`TestSuite`]: https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestSuite.html "struct quick_junit::report::TestSuite"
+[`TestCase`]: https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestCase.html "struct quick_junit::report::TestCase"
+[`TestCaseStatus`]: https://docs.rs/quick-junit/0.7.0/quick_junit/report/enum.TestCaseStatus.html "enum quick_junit::report::TestCaseStatus"
+[`TestRerun`]: https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestRerun.html "struct quick_junit::report::TestRerun"
 <!-- cargo-sync-rdme ]] -->
 
 ## Contributing
