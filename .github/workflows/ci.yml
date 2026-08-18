@@ -22,7 +22,7 @@ jobs:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@82a92a6e8fbeee089604da2575dc567ae9ddeaab # v2
       - name: Install just, cargo-hack, and cargo-sync-rdme
-        uses: taiki-e/install-action@b6b84cf49ebfe0176417bdce007c624f0db37f20 # v2
+        uses: taiki-e/install-action@5b4d68e2e660441203ab128a23676f1e4faf1532 # v2
         with:
           tool: just,cargo-hack,cargo-sync-rdme
       - name: Lint (clippy)
@@ -78,11 +78,11 @@ jobs:
         with:
           key: ${{ matrix.rust-version }}
       - name: Install latest nextest release
-        uses: taiki-e/install-action@16134900c9089764f649bfd3b8dc8378d6e77d26 # nextest
+        uses: taiki-e/install-action@cbc0d781df01b1867f3d6401299786f6193ad0b1 # nextest
       - name: Install just
-        uses: taiki-e/install-action@1b0ab3d2f6e68837936954afdea248a125d3b906 # just
+        uses: taiki-e/install-action@6d97d0d47ea06f0bb4e81bc7911476e7cc61b312 # just
       - name: Install cargo-hack
-        uses: taiki-e/install-action@172199283c329db0d9ca4e0c639d047fd5460062 # cargo-hack
+        uses: taiki-e/install-action@4d1d2b7d18af83a17255d92a76d0c8ed8fd146a6 # cargo-hack
       - name: Build quick-junit
         run: just powerset build
       - name: Run tests
