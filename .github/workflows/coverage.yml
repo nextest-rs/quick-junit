@@ -25,9 +25,9 @@ jobs:
       - uses: Swatinem/rust-cache@82a92a6e8fbeee089604da2575dc567ae9ddeaab # v2
 
       - name: Install latest nextest release
-        uses: taiki-e/install-action@6d9ce389421e24f7b73aff5e841bbe5a6b4c974c # nextest
+        uses: taiki-e/install-action@16134900c9089764f649bfd3b8dc8378d6e77d26 # nextest
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@b98dda19e8b67e904c9e78a0cbd773be4105a74f # cargo-llvm-cov
+        uses: taiki-e/install-action@62c00134de3baf86116d0436bae2b425a8e0adbb # cargo-llvm-cov
 
       - name: Collect coverage data
         # Generate separate reports for nextest and doctests, and combine them.
