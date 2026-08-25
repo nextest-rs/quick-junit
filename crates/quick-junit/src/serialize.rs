@@ -64,8 +64,10 @@ pub(crate) fn serialize_report_impl(
     } = report;
 
     let mut testsuites_tag = BytesStart::new(TESTSUITES_TAG);
+    if let Some(name) = name {
+        testsuites_tag.push_attribute(("name", name.as_str()));
+    }
     testsuites_tag.extend_attributes([
-        ("name", name.as_str()),
         ("tests", tests.to_string().as_str()),
         ("skipped", skipped.to_string().as_str()),
         ("failures", failures.to_string().as_str()),
