@@ -189,7 +189,7 @@ impl Arbitrary for Report {
 
     fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
         (
-            test_name_strategy(),
+            option::of(test_name_strategy()),
             any::<Option<ReportUuid>>(),
             option::of(datetime_strategy()),
             option::of(duration_strategy()),
@@ -211,7 +211,7 @@ impl Arbitrary for Report {
                 };
 
                 Report {
-                    name: Some(name),
+                    name,
                     uuid,
                     timestamp,
                     time,

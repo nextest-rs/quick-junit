@@ -22,6 +22,27 @@ fn fixtures() {
     basic_report
         .serialize(f)
         .expect("serializing basic_report succeeds");
+
+    let f = mint
+        .new_goldenfile("unnamed_report.xml")
+        .expect("creating new goldenfile succeeds");
+
+    let unnamed_report = unnamed_report();
+    unnamed_report
+        .serialize(f)
+        .expect("serializing unnamed_report succeeds");
+}
+
+fn unnamed_report() -> Report {
+    let mut report = Report::unnamed();
+    report.set_time(Duration::from_millis(1500));
+
+    let mut test_suite = TestSuite::new("testsuite0");
+    let test_case = TestCase::new("testcase0", TestCaseStatus::success());
+    test_suite.add_test_case(test_case);
+    report.add_test_suite(test_suite);
+
+    report
 }
 
 fn basic_report() -> Report {
