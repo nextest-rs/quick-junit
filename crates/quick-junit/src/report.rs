@@ -84,8 +84,32 @@ pub struct Report {
 impl Report {
     /// Creates a new `Report` with the given name.
     pub fn new(name: impl Into<XmlString>) -> Self {
+        let mut report = Self::unnamed();
+        report.name = Some(name.into());
+        report
+    }
+
+    /// Creates a new `Report` without a name.
+    ///
+    /// The `name` attribute on the root `<testsuites>` element is optional in
+    /// the JUnit schema, and some tools omit it. A report created this way
+    /// serializes without a `name` attribute. To set a name later, assign to
+    /// the `name` field.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use quick_junit::Report;
+    ///
+    /// let report = Report::unnamed();
+    /// assert!(report.name.is_none());
+    ///
+    /// let xml = report.to_string().unwrap();
+    /// assert!(xml.contains(r#"<testsuites tests="0""#));
+    /// ```
+    pub fn unnamed() -> Self {
         Self {
-            name: Some(name.into()),
+            name: None,
             uuid: None,
             timestamp: None,
             time: None,

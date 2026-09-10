@@ -3,9 +3,18 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
-### Other changes
+### Changed
 
-- Reports without a `name` attribute can now be deserialized correctly.
+- `Report::name` is now an `Option<XmlString>` rather than an `XmlString`. 
+
+  Many tools, most notably Python's [junit-xml](https://pypi.org/project/junit-xml/), emit a `<testsuites>` element without a `name` attribute, and the Jenkins [junit-10 schema](https://github.com/jenkinsci/xunit-plugin/blob/master/src/main/resources/org/jenkinsci/plugins/xunit/types/model/xsd/junit-10.xsd) doesn't require one either. Previously, quick-junit rejected such reports with a missing attribute error. With this change:
+
+  * Reports without a `name` now deserialize with `name` set to `None`.
+  * Serializing a report with `name: None` omits the attribute.
+
+  `Report::new` continues to require a name; use the new `Report::unnamed` constructor to build a report without one.
+
+  Thanks [nikstur](https://github.com/nikstur) for your first contribution!
 
 ## [0.7.0] - 2026-07-20
 
