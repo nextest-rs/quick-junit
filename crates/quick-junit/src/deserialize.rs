@@ -54,7 +54,7 @@ impl Report {
     /// "#;
     ///
     /// let report = Report::deserialize_from_str(xml).unwrap();
-    /// assert_eq!(report.name.as_str(), "my-test-run");
+    /// assert_eq!(report.name.unwrap().as_str(), "my-test-run");
     /// assert_eq!(report.tests, 1);
     /// ```
     pub fn deserialize_from_str(xml: &str) -> Result<Self, DeserializeError> {
@@ -188,8 +188,6 @@ fn parse_testsuites_element(
             _ => {} // Ignore unknown attributes.
         }
     }
-
-    let name = require_attribute(name, "name", path)?;
 
     Ok(Report {
         name,
@@ -1234,7 +1232,7 @@ mod tests {
 "#;
 
         let report = Report::deserialize_from_str(xml).unwrap();
-        assert_eq!(report.name.as_str(), "my-test-run");
+        assert_eq!(report.name.unwrap().as_str(), "my-test-run");
         assert_eq!(report.tests, 1);
         assert_eq!(report.failures, 0);
         assert_eq!(report.errors, 0);

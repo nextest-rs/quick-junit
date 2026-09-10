@@ -33,7 +33,7 @@ pub type ReportUuid = TypedUuid<ReportKind>;
 #[non_exhaustive]
 pub struct Report {
     /// The name of this report.
-    pub name: XmlString,
+    pub name: Option<XmlString>,
 
     /// A unique identifier associated with this report.
     ///
@@ -85,7 +85,7 @@ impl Report {
     /// Creates a new `Report` with the given name.
     pub fn new(name: impl Into<XmlString>) -> Self {
         Self {
-            name: name.into(),
+            name: Some(name.into()),
             uuid: None,
             timestamp: None,
             time: None,

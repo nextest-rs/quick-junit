@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+### Other changes
+
+- Reports without a `name` attribute can now be deserialized correctly.
+
 ## [0.7.0] - 2026-07-20
 
 ### Changed

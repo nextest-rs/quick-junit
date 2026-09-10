@@ -211,7 +211,7 @@ impl Arbitrary for Report {
                 };
 
                 Report {
-                    name,
+                    name: Some(name),
                     uuid,
                     timestamp,
                     time,

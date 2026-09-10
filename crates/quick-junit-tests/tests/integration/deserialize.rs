@@ -30,14 +30,10 @@ fn test_testsuites_missing_name() {
 <testsuites tests="0" failures="0" errors="0">
 </testsuites>"#;
 
-    assert_error(
-        xml,
-        |kind| matches!(kind, DeserializeErrorKind::MissingAttribute(_)),
-        &[
-            PathElement::TestSuites,
-            PathElement::Attribute("name".to_string()),
-        ],
-    );
+    // Should succeed - report doesn't need to have a name
+    let report = Report::deserialize_from_str(xml).unwrap();
+    assert!(report.name.is_none());
+    assert_eq!(report.tests, 0);
 }
 
 #[test]
@@ -645,7 +641,7 @@ fn test_empty_testsuites_element() {
 <testsuites name="test" tests="0" failures="0" errors="0"/>"#;
 
     let report = Report::deserialize_from_str(xml).unwrap();
-    assert_eq!(report.name.as_str(), "test");
+    assert_eq!(report.name.unwrap().as_str(), "test");
     assert_eq!(report.test_suites.len(), 0);
 }
 
@@ -655,7 +651,7 @@ fn test_empty_testsuites_with_all_attributes() {
 <testsuites name="test" uuid="550e8400-e29b-41d4-a716-446655440000" timestamp="2023-01-01T00:00:00Z" time="1.5" tests="0" failures="0" errors="0"/>"#;
 
     let report = Report::deserialize_from_str(xml).unwrap();
-    assert_eq!(report.name.as_str(), "test");
+    assert_eq!(report.name.unwrap().as_str(), "test");
     assert_eq!(
         report.uuid.unwrap().to_string(),
         "550e8400-e29b-41d4-a716-446655440000"
@@ -1060,7 +1056,7 @@ fn test_unknown_testsuites_attributes() {
 
     // Should succeed - unknown attributes on testsuites are ignored
     let report = Report::deserialize_from_str(xml).unwrap();
-    assert_eq!(report.name.as_str(), "test");
+    assert_eq!(report.name.unwrap().as_str(), "test");
 }
 
 #[test]
@@ -1070,7 +1066,7 @@ fn test_empty_testsuites_unknown_attributes() {
 
     // Should succeed - unknown attributes on empty testsuites are ignored
     let report = Report::deserialize_from_str(xml).unwrap();
-    assert_eq!(report.name.as_str(), "test");
+    assert_eq!(report.name.unwrap().as_str(), "test");
 }
 
 #[test]
@@ -1078,14 +1074,10 @@ fn test_empty_testsuites_missing_name() {
     let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <testsuites tests="0" failures="0" errors="0"/>"#;
 
-    assert_error(
-        xml,
-        |kind| matches!(kind, DeserializeErrorKind::MissingAttribute(_)),
-        &[
-            PathElement::TestSuites,
-            PathElement::Attribute("name".to_string()),
-        ],
-    );
+    // Should succeed - report doesn't need to have a name
+    let report = Report::deserialize_from_str(xml).unwrap();
+    assert!(report.name.is_none());
+    assert_eq!(report.tests, 0);
 }
 
 #[test]

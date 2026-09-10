@@ -205,7 +205,7 @@ fn deserialize_minimal_report() {
 "#;
 
     let report = Report::deserialize_from_str(xml).expect("deserializing minimal report succeeds");
-    assert_eq!(report.name.as_str(), "minimal");
+    assert_eq!(report.name.unwrap().as_str(), "minimal");
     assert_eq!(report.tests, 0);
     assert_eq!(report.failures, 0);
     assert_eq!(report.errors, 0);
@@ -258,14 +258,6 @@ fn deserialize_with_extra_attributes() {
 
 #[test]
 fn deserialize_error_handling() {
-    // Test missing required attribute
-    let xml = r#"<?xml version="1.0" encoding="UTF-8"?>
-<testsuites tests="0" failures="0" errors="0">
-</testsuites>
-"#;
-    let result = Report::deserialize_from_str(xml);
-    assert!(result.is_err());
-
     // Test invalid XML
     let xml = r#"<testsuites name="test" tests="0">"#;
     let result = Report::deserialize_from_str(xml);
