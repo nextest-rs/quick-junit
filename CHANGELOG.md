@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+## [0.8.0] - 2026-09-10
+
 ### Changed
 
 - `Report::name` is now an `Option<XmlString>` rather than an `XmlString`. 
@@ -180,6 +182,7 @@ Internal dependency update: `quick-xml` updated to 0.37.1.
 - Initial version.
 
 <!-- next-url -->
+[0.8.0]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.8.0
 [0.7.0]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.7.0
 [0.6.1]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.6.1
 [0.6.0]: https://github.com/nextest-rs/quick-junit/releases/tag/quick-junit-0.6.0

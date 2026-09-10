@@ -80,11 +80,11 @@ crate has reached 1.x, any MSRV bump will be accompanied with a new minor versio
 * [**junit-report**](https://crates.io/crates/junit-report): Older, more mature project. Doesn’t
   appear to support flaky tests or arbitrary properties as of version 0.8.3.
 
-[`Report`]: https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.Report.html "struct quick_junit::report::Report"
-[`TestSuite`]: https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestSuite.html "struct quick_junit::report::TestSuite"
-[`TestCase`]: https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestCase.html "struct quick_junit::report::TestCase"
-[`TestCaseStatus`]: https://docs.rs/quick-junit/0.7.0/quick_junit/report/enum.TestCaseStatus.html "enum quick_junit::report::TestCaseStatus"
-[`TestRerun`]: https://docs.rs/quick-junit/0.7.0/quick_junit/report/struct.TestRerun.html "struct quick_junit::report::TestRerun"
+[`Report`]: https://docs.rs/quick-junit/0.8.0/quick_junit/report/struct.Report.html "struct quick_junit::report::Report"
+[`TestSuite`]: https://docs.rs/quick-junit/0.8.0/quick_junit/report/struct.TestSuite.html "struct quick_junit::report::TestSuite"
+[`TestCase`]: https://docs.rs/quick-junit/0.8.0/quick_junit/report/struct.TestCase.html "struct quick_junit::report::TestCase"
+[`TestCaseStatus`]: https://docs.rs/quick-junit/0.8.0/quick_junit/report/enum.TestCaseStatus.html "enum quick_junit::report::TestCaseStatus"
+[`TestRerun`]: https://docs.rs/quick-junit/0.8.0/quick_junit/report/struct.TestRerun.html "struct quick_junit::report::TestRerun"
 <!-- cargo-sync-rdme ]] -->
 
 ## Contributing
