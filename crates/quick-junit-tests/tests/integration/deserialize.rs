@@ -3,7 +3,13 @@
 
 //! Tests for deserialization error paths and error kinds.
 
+use jiff::ZonedDateTime;
 use quick_junit::{DeserializeErrorKind, PathElement, Report};
+
+/// Formats a timestamp as RFC 3339, with seconds precision.
+fn to_rfc3339(timestamp: &ZonedDateTime) -> String {
+    timestamp.strftime("%Y-%m-%dT%H:%M:%S%:z").to_string()
+}
 
 /// Helper to assert error kind and path.
 fn assert_error(
@@ -82,6 +88,33 @@ fn test_testsuites_invalid_timestamp() {
             PathElement::Attribute("timestamp".to_string()),
         ],
     );
+}
+
+/// Strings that are not RFC 3339 timestamps (no time, no offset, or a time zone annotation) are
+/// rejected.
+#[test]
+fn test_testsuites_non_rfc3339_timestamp() {
+    for timestamp in [
+        "2023-01-01",
+        "2023-01-01T00:00:00",
+        "2023-01-01T00:00:00+00:00[UTC]",
+        "2023-01-01T00:00:00-05:00[America/New_York]",
+    ] {
+        let xml = format!(
+            r#"<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="test" timestamp="{timestamp}" tests="0" failures="0" errors="0">
+</testsuites>"#
+        );
+
+        assert_error(
+            xml,
+            |kind| matches!(kind, DeserializeErrorKind::ParseTimestampError(_)),
+            &[
+                PathElement::TestSuites,
+                PathElement::Attribute("timestamp".to_string()),
+            ],
+        );
+    }
 }
 
 #[test]
@@ -657,7 +690,7 @@ fn test_empty_testsuites_with_all_attributes() {
         "550e8400-e29b-41d4-a716-446655440000"
     );
     assert_eq!(
-        report.timestamp.unwrap().to_rfc3339(),
+        to_rfc3339(report.timestamp.as_ref().unwrap()),
         "2023-01-01T00:00:00+00:00"
     );
     assert_eq!(
@@ -706,7 +739,7 @@ fn test_empty_testsuite_with_timestamp_and_time() {
     let report = Report::deserialize_from_str(xml).unwrap();
     let suite = &report.test_suites[0];
     assert_eq!(
-        suite.timestamp.unwrap().to_rfc3339(),
+        to_rfc3339(suite.timestamp.as_ref().unwrap()),
         "2023-01-01T00:00:00+00:00"
     );
     assert_eq!(suite.time.unwrap(), std::time::Duration::from_secs_f64(1.5));
@@ -776,7 +809,7 @@ fn test_empty_testcase_with_all_attributes() {
     assert_eq!(test_case.classname.as_ref().unwrap().as_str(), "MyClass");
     assert_eq!(test_case.assertions, Some(5));
     assert_eq!(
-        test_case.timestamp.unwrap().to_rfc3339(),
+        to_rfc3339(test_case.timestamp.as_ref().unwrap()),
         "2023-01-01T00:00:00+00:00"
     );
     assert_eq!(
@@ -878,7 +911,7 @@ fn test_status_element_with_timestamp_and_time() {
     if let quick_junit::TestCaseStatus::Success { flaky_runs } = &test_case.status {
         assert_eq!(flaky_runs.len(), 1);
         assert_eq!(
-            flaky_runs[0].timestamp.unwrap().to_rfc3339(),
+            to_rfc3339(flaky_runs[0].timestamp.as_ref().unwrap()),
             "2023-01-01T00:00:00+00:00"
         );
         assert_eq!(

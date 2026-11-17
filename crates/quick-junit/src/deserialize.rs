@@ -6,8 +6,8 @@ use crate::{
     PathElement, Property, Report, ReportUuid, TestCase, TestCaseStatus, TestRerun, TestSuite,
     XmlString,
 };
-use chrono::{DateTime, FixedOffset};
 use indexmap::IndexMap;
+use jiff::{fmt::temporal::Pieces, tz::TimeZone, ZonedDateTime};
 use newtype_uuid::GenericUuid;
 use quick_xml::{
     escape::{resolve_xml_entity, unescape_with},
@@ -558,7 +558,7 @@ struct StatusElementData {
     stack_trace: Option<XmlString>,
     system_out: Option<XmlString>,
     system_err: Option<XmlString>,
-    timestamp: Option<DateTime<FixedOffset>>,
+    timestamp: Option<ZonedDateTime>,
     time: Option<Duration>,
 }
 
@@ -962,7 +962,7 @@ fn build_test_rerun(element: &RerunStatusElement) -> TestRerun {
 
     TestRerun {
         kind,
-        timestamp: element.data.timestamp,
+        timestamp: element.data.timestamp.clone(),
         time: element.data.time,
         message: element.data.message.clone(),
         ty: element.data.ty.clone(),
@@ -1194,18 +1194,30 @@ fn parse_duration(bytes: &[u8], path: &[PathElement]) -> Result<Duration, Deseri
     })
 }
 
-fn parse_timestamp(
-    bytes: &[u8],
-    path: &[PathElement],
-) -> Result<DateTime<FixedOffset>, DeserializeError> {
+fn parse_timestamp(bytes: &[u8], path: &[PathElement]) -> Result<ZonedDateTime, DeserializeError> {
     let s = std::str::from_utf8(bytes)
         .map_err(|e| DeserializeError::new(DeserializeErrorKind::Utf8Error(e), path.to_vec()))?;
-    DateTime::parse_from_rfc3339(s).map_err(|_| {
+    parse_rfc3339(s).ok_or_else(|| {
         DeserializeError::new(
             DeserializeErrorKind::ParseTimestampError(s.to_string()),
             path.to_vec(),
         )
     })
+}
+
+/// Parses an RFC 3339 timestamp, keeping its UTC offset as a fixed-offset time zone.
+///
+/// The string must have a date, a time and a UTC offset, and no time zone annotation.
+fn parse_rfc3339(s: &str) -> Option<ZonedDateTime> {
+    let pieces = Pieces::parse(s).ok()?;
+    if pieces.time_zone_annotation().is_some() {
+        return None;
+    }
+    let time = pieces.time()?;
+    let offset = pieces.to_numeric_offset()?;
+    TimeZone::fixed(offset)
+        .to_zoned_datetime(pieces.date().to_datetime(time))
+        .ok()
 }
 
 fn parse_uuid(bytes: &[u8], path: &[PathElement]) -> Result<ReportUuid, DeserializeError> {

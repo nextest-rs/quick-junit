@@ -3,6 +3,15 @@
 <!-- next-header -->
 ## Unreleased - ReleaseDate
 
+### Changed
+
+- Timestamps are now [`jiff::ZonedDateTime`](https://docs.rs/jiff/1/jiff/struct.ZonedDateTime.html) rather than `chrono::DateTime<FixedOffset>`, and the `chrono` dependency has been removed. chrono is no longer maintained ([RUSTSEC-2026-0543](https://rustsec.org/advisories/RUSTSEC-2026-0543)), and its maintainer recommends jiff.
+
+  This affects the `timestamp` fields and `set_timestamp` methods on `Report`, `TestSuite`, `TestCase` and `TestRerun`. The serialized form is unchanged: an RFC 3339 timestamp with millisecond precision and a numeric UTC offset, such as `2021-04-01T10:52:37.000-08:00`. Deserialized timestamps keep their UTC offset as a fixed-offset time zone.
+
+  To migrate, build a `ZonedDateTime` instead of a chrono `DateTime`. For example, `jiff::Timestamp::now().to_zoned_datetime(jiff::tz::TimeZone::UTC)` or `jiff::ZonedDateTime::now()`.
+- MSRV updated to Rust 1.85, the minimum supported by jiff 1.0.
+
 ## [0.8.0] - 2026-09-10
 
 ### Changed

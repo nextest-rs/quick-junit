@@ -1,8 +1,8 @@
 // Copyright (c) The nextest Contributors
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use chrono::DateTime;
 use goldenfile::Mint;
+use jiff::fmt::rfc2822;
 use owo_colors::OwoColorize;
 use pretty_assertions::assert_eq;
 use quick_junit::{
@@ -48,15 +48,13 @@ fn unnamed_report() -> Report {
 fn basic_report() -> Report {
     let mut report = Report::new("my-test-run");
     report.set_timestamp(
-        DateTime::parse_from_rfc2822("Thu, 1 Apr 2021 10:52:37 -0800")
-            .expect("valid RFC2822 datetime"),
+        rfc2822::parse("Thu, 1 Apr 2021 10:52:37 -0800").expect("valid RFC2822 datetime"),
     );
     report.set_time(Duration::new(42, 235_000_000));
 
     let mut test_suite = TestSuite::new("testsuite0");
     test_suite.set_timestamp(
-        DateTime::parse_from_rfc2822("Thu, 1 Apr 2021 10:52:39 -0800")
-            .expect("valid RFC2822 datetime"),
+        rfc2822::parse("Thu, 1 Apr 2021 10:52:39 -0800").expect("valid RFC2822 datetime"),
     );
 
     // ---
@@ -98,8 +96,7 @@ fn basic_report() -> Report {
     let mut test_case = TestCase::new("testcase3", test_case_status);
     test_case
         .set_timestamp(
-            DateTime::parse_from_rfc2822("Thu, 1 Apr 2021 11:52:41 -0700")
-                .expect("valid RFC2822 datetime"),
+            rfc2822::parse("Thu, 1 Apr 2021 11:52:41 -0700").expect("valid RFC2822 datetime"),
         )
         .set_assertions(20)
         .set_system_out("testcase3 output")

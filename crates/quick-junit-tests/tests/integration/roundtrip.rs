@@ -156,3 +156,40 @@ fn test_rerun_roundtrip(rerun: TestRerun) {
         panic!("Expected Success status with flaky runs");
     }
 }
+
+/// Tests the serialized form of timestamps: a numeric UTC offset (never `Z`), and fractional
+/// seconds truncated to 3 decimal places. Deserializing keeps the offset.
+#[test]
+fn timestamp_wire_format() {
+    use jiff::{
+        tz::{self, TimeZone},
+        Timestamp,
+    };
+
+    let instant = Timestamp::new(1_617_303_157, 999_999_999).unwrap();
+    for (offset, expected) in [
+        (tz::offset(0), "2021-04-01T18:52:37.999+00:00"),
+        (tz::offset(-8), "2021-04-01T10:52:37.999-08:00"),
+        (
+            tz::Offset::from_seconds(5 * 3600 + 45 * 60).unwrap(),
+            "2021-04-02T00:37:37.999+05:45",
+        ),
+    ] {
+        let mut report = Report::new("timestamps");
+        report.set_timestamp(instant.to_zoned_datetime(TimeZone::fixed(offset)));
+        let xml = report.to_string().expect("serialization should succeed");
+        assert!(
+            xml.contains(&format!(r#"timestamp="{expected}""#)),
+            "expected timestamp {expected} in:\n{xml}"
+        );
+
+        let deserialized =
+            Report::deserialize_from_str(&xml).expect("deserialization should succeed");
+        let timestamp = deserialized.timestamp.expect("timestamp is present");
+        assert_eq!(timestamp.offset(), offset);
+        assert_eq!(
+            timestamp.timestamp(),
+            Timestamp::new(1_617_303_157, 999_000_000).unwrap()
+        );
+    }
+}

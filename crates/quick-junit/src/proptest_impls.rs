@@ -9,7 +9,10 @@ use crate::{
     FlakyOrRerun, NonSuccessKind, NonSuccessReruns, Property, Report, ReportUuid, TestCase,
     TestCaseStatus, TestRerun, TestSuite, XmlString,
 };
-use chrono::{DateTime, FixedOffset};
+use jiff::{
+    tz::{Offset, TimeZone},
+    Timestamp, ZonedDateTime,
+};
 use proptest::{
     arbitrary::Arbitrary,
     collection, option,
@@ -50,18 +53,17 @@ pub(crate) fn xml_attr_name_strategy() -> impl Strategy<Value = XmlString> {
     "[a-zA-Z_][a-zA-Z0-9_.-]{0,15}".prop_map(XmlString::new)
 }
 
-/// Strategy for generating arbitrary DateTime<FixedOffset>
-pub(crate) fn datetime_strategy() -> impl Strategy<Value = DateTime<FixedOffset>> {
+/// Strategy for generating arbitrary ZonedDateTime values with a fixed offset
+pub(crate) fn datetime_strategy() -> impl Strategy<Value = ZonedDateTime> {
     // Generate timestamps within a reasonable range (2000-2100)
     // to avoid edge cases with very old or very future dates
     // Generate offsets in minute increments only (RFC 3339 doesn't preserve seconds in offsets)
     (946684800i64..4102444800i64, -1440i32..1440i32).prop_map(|(secs, offset_minutes)| {
         let offset_secs = offset_minutes * 60;
-        let offset =
-            FixedOffset::east_opt(offset_secs).unwrap_or(FixedOffset::east_opt(0).unwrap());
-        DateTime::from_timestamp(secs, 0)
+        let offset = Offset::from_seconds(offset_secs).unwrap_or(Offset::UTC);
+        Timestamp::from_second(secs)
             .unwrap()
-            .with_timezone(&offset)
+            .to_zoned_datetime(TimeZone::fixed(offset))
     })
 }
 
