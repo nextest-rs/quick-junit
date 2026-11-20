@@ -65,8 +65,8 @@ jobs:
           - ubuntu-latest
           - macos-latest
           - windows-latest
-        # 1.79 is the MSRV
-        rust-version: ["1.79", stable]
+        # 1.85 is the MSRV
+        rust-version: ["1.85", stable]
       fail-fast: false
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

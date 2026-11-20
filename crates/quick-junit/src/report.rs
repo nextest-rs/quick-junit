@@ -7,8 +7,8 @@ use crate::proptest_impls::{
     xml_attr_index_map_strategy,
 };
 use crate::{serialize::serialize_report, SerializeError};
-use chrono::{DateTime, FixedOffset};
 use indexmap::map::IndexMap;
+use jiff::ZonedDateTime;
 use newtype_uuid::{GenericUuid, TypedUuid, TypedUuidKind, TypedUuidTag};
 #[cfg(feature = "proptest")]
 use proptest::{collection, option, prelude::*};
@@ -43,7 +43,7 @@ pub struct Report {
     /// The time at which the first test in this report began execution.
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<ZonedDateTime>,
 
     /// The overall time taken by the test suite.
     ///
@@ -139,7 +139,7 @@ impl Report {
     }
 
     /// Sets the start timestamp for the report.
-    pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
+    pub fn set_timestamp(&mut self, timestamp: impl Into<ZonedDateTime>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
     }
@@ -242,7 +242,7 @@ pub struct TestSuite {
     pub failures: usize,
 
     /// The time at which the TestSuite began execution.
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<ZonedDateTime>,
 
     /// The overall time taken by the TestSuite.
     pub time: Option<Duration>,
@@ -284,7 +284,7 @@ impl TestSuite {
     }
 
     /// Sets the start timestamp for the TestSuite.
-    pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
+    pub fn set_timestamp(&mut self, timestamp: impl Into<ZonedDateTime>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
     }
@@ -390,7 +390,7 @@ pub struct TestCase {
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
     #[cfg_attr(feature = "proptest", strategy(option::of(datetime_strategy())))]
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<ZonedDateTime>,
 
     /// The time it took to execute this test case.
     #[cfg_attr(feature = "proptest", strategy(option::of(duration_strategy())))]
@@ -444,7 +444,7 @@ impl TestCase {
     }
 
     /// Sets the start timestamp for the test case.
-    pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
+    pub fn set_timestamp(&mut self, timestamp: impl Into<ZonedDateTime>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
     }
@@ -672,7 +672,7 @@ pub struct TestRerun {
     ///
     /// This is not part of the JUnit spec, but may be useful for some tools.
     #[cfg_attr(feature = "proptest", strategy(option::of(datetime_strategy())))]
-    pub timestamp: Option<DateTime<FixedOffset>>,
+    pub timestamp: Option<ZonedDateTime>,
 
     /// The time it took to execute this rerun.
     ///
@@ -719,7 +719,7 @@ impl TestRerun {
     }
 
     /// Sets the start timestamp for this rerun.
-    pub fn set_timestamp(&mut self, timestamp: impl Into<DateTime<FixedOffset>>) -> &mut Self {
+    pub fn set_timestamp(&mut self, timestamp: impl Into<ZonedDateTime>) -> &mut Self {
         self.timestamp = Some(timestamp.into());
         self
     }

@@ -17,8 +17,8 @@ required-features = ["internal-testing"]
 path = "src/bin/generate-junit-corpus.rs"
 
 [dependencies]
-chrono.workspace = true
 indexmap.workspace = true
+jiff.workspace = true
 newtype-uuid.workspace = true
 proptest = { workspace = true, optional = true }
 quick-xml.workspace = true

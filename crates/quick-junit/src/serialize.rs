@@ -7,7 +7,7 @@ use crate::{
     FlakyOrRerun, NonSuccessKind, Property, Report, SerializeError, TestCase, TestCaseStatus,
     TestRerun, TestSuite, XmlString,
 };
-use chrono::{DateTime, FixedOffset};
+use jiff::ZonedDateTime;
 use quick_xml::{
     events::{BytesDecl, BytesEnd, BytesStart, BytesText, Event},
     Writer,
@@ -444,13 +444,14 @@ fn serialize_end_tag(
     writer.write_event(Event::End(end_tag))
 }
 
-fn serialize_timestamp(tag: &mut BytesStart<'_>, timestamp: &DateTime<FixedOffset>) {
-    // The format string is obtained from https://docs.rs/chrono/0.4.19/chrono/format/strftime/index.html#fn8.
-    // The only change is that this only prints timestamps up to 3 decimal places (to match times).
+fn serialize_timestamp(tag: &mut BytesStart<'_>, timestamp: &ZonedDateTime) {
+    // An RFC 3339 timestamp with the UTC offset in numeric form (never `Z`), printing timestamps up
+    // to 3 decimal places (to match times). See
+    // https://docs.rs/jiff/latest/jiff/fmt/strtime/index.html for the format specifiers.
     static RFC_3339_FORMAT: &str = "%Y-%m-%dT%H:%M:%S%.3f%:z";
     tag.push_attribute((
         "timestamp",
-        format!("{}", timestamp.format(RFC_3339_FORMAT)).as_str(),
+        timestamp.strftime(RFC_3339_FORMAT).to_string().as_str(),
     ));
 }
 

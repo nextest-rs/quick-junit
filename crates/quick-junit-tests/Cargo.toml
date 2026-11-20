@@ -6,8 +6,8 @@ edition.workspace = true
 license.workspace = true
 
 [dev-dependencies]
-chrono.workspace = true
 goldenfile.workspace = true
+jiff.workspace = true
 owo-colors.workspace = true
 pretty_assertions.workspace = true
 proptest.workspace = true
