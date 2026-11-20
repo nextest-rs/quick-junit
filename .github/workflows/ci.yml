@@ -63,8 +63,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          # macos-14 for M1 runners
-          - macos-14
+          - macos-latest
           - windows-latest
         # 1.79 is the MSRV
         rust-version: ["1.79", stable]
